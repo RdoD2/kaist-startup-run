@@ -1,0 +1,11 @@
+{
+  "name": "STARTUP RUN",
+  "short_name": "STARTUP RUN",
+  "description": "KAIST 창업가의 N일을 버텨라",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": []
+}

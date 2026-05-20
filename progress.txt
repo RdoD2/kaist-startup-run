@@ -1,0 +1,78 @@
+RALPH SESSION — STARTUP RUN v3 (폴리시)
+===============================
+Start: 2026-05-19
+End:   2026-05-19
+
+VERDICT: passes:true all stories. Pending architect verification.
+DESLOP: --no-deslop
+
+v3 CHANGES
+==========
+
+US-001  픽셀 캐릭터 + 12종 장애물 ✅
+  - src/game/sprites.ts (289줄) 신규
+  - createPlayerSprite: 머리/후드/눈/몸통/팔/다리/신발 Rectangle 컴포지트
+  - createObstacleSprite: 12종 각자 특징 살린 픽셀 도트 (PASS=양복+X, 번아웃=좀비, 코파운더=짐, 경쟁=화살, AWS=직사각형+텍스트 등)
+  - GameScene: player를 hitbox(invisible AABB) + sprite(시각 Container) 분리
+  - 외부 이미지 파일 dependency 0
+
+US-002  WebAudio 8-bit SFX ✅
+  - src/game/sound.ts (157줄) 신규
+  - SoundFX 클래스 + soundFX 싱글톤
+  - jump (200→400Hz square), duck (300→200Hz), collide (노이즈), death (200→50Hz fall), milestone (C-E-G arpeggio), bossWarning (300Hz × 3)
+  - SSR 가드, autoplay 정책 init() 분리
+  - GameScene 5곳 hook (점프/숙이기/사망/마일스톤/보스경고)
+  - 외부 오디오 파일 dependency 0
+
+US-003  애니메이션 ✅
+  - 달리기: runTimer + sin 기반 다리 교차
+  - 점프: 본체 rotation -0.3 yoyo tween (이미 있음)
+  - 사망: rotation -1.0 + Y -10 튀어오름
+  - 숙이기: sprite scaleY 0.6 → 1.0
+
+US-004  사망 화면 폴리시 ✅
+  - triggerDeath: cameras.main.zoomTo(1.1, 500) 추가
+  - DeathCard wrapper: deathcard-in keyframe (opacity 0→1, translateY 8→0, 280ms)
+  - GAME OVER 텍스트: animate-pulse
+  - globals.css에 keyframe 정의
+
+US-005  og:image 공유 카드 ✅
+  - @vercel/og dependency 설치
+  - src/app/api/og/route.tsx Edge Runtime route 신규
+  - 1200×630 PNG: STARTUP RUN 로고 + KAIST 블루 액센트 + GAME OVER + 점수카드 박스 + 푸터
+  - 사망원인 10종 한국어 매핑
+  - 폰트: Press Start 2P TTF (github raw) + 매직 바이트 검증 + monospace fallback
+    ⚠️ 초기 버전은 WOFF2 fetch → @vercel/og 미지원 → 500. TTF + magic byte validation으로 fix.
+  - DeathCard 공유 버튼: Web Share API + 클립보드 fallback + Toast
+
+US-006  흐름 폴리시 ✅
+  - PlayState에 'interstitial' phase 추가
+  - /play 진입: startGame → interstitial("창업 시작합니다…") → 400ms 후 playing
+  - handlePlayAgain도 동일 흐름
+
+US-007  통합 검증 ✅
+  - npm run type-check: 0 errors
+  - npm run build: ✓ 9 정적 + 1 dynamic (/api/og) prerender
+  - 8 라우트 + /api/og 모두 200
+  - /api/og 응답 = 31KB PNG (1200×630, 8-bit RGBA)
+  - 디자인 룰 0 위반 (rounded/blur/그라데이션/이모지)
+
+US-008  문서 갱신 ✅
+  - PRD.md §11: 픽셀/SFX/og 체크박스 ON
+  - PRD.md §12: v3 의사결정 로그 항목 추가
+  - progress.txt: 본 파일
+
+LEARNINGS
+=========
+- @vercel/og는 TTF/OTF/WOFF 지원, WOFF2 미지원. 매직 바이트(0x00010000=TTF, 'OTTO'=OTF) 검증으로 fallback 안전성 확보.
+- WebAudio는 첫 user-gesture 이후 AudioContext 생성 필수 (autoplay policy).
+- Phaser Container로 hitbox/sprite 분리 → 충돌은 AABB rect, 시각은 컨테이너. 깔끔.
+- Next.js Edge route에서 fetch GitHub raw는 SSR/edge 환경에서 가능 (테스트됨).
+- WebAudio 모든 API SSR 가드 필수 (window undefined).
+
+NEXT (사용자 의존, 변경 없음)
+==================
+- BGM (선택, 현재 SFX-only)
+- Supabase 키 + Vercel 연결
+- 대회 주최 측 컨펌 4건
+- 학과 마스터 리스트 최종

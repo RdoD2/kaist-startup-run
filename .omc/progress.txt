@@ -1,0 +1,82 @@
+RALPH SESSION — STARTUP RUN v1
+===============================
+Start: 2026-05-19
+
+INITIAL STATE
+- Project bootstrapped: Next.js 14 + Phaser 3 + Supabase + Tailwind
+- Built by 3 parallel agents (game/UI/backend)
+- type-check + build PASS
+- KNOWN BUGS at start:
+  - Phaser scene auto-start + 'ready' restart didn't re-init with data → onGameOver undefined
+  - api.ts ↔ Edge Function field name mismatches (session_id vs game_session_id, etc.)
+  - mockPlayer in api.ts reset fields between calls — needed merge behavior
+  - registerPlayer signature divergent (anonToken? vs nickname)
+  - updatePlayer signature divergent (flat vs {step, fields})
+
+WORK COMPLETED
+==============
+
+US-001  /test-game + Phaser 동작 ✅
+  - 이전 작업에서 game/index.ts를 game.scene.add() 패턴으로 전환 (자동 시작 X)
+  - GameScene.init(data)이 이제 정확한 data를 받음 → onGameOver 콜백 작동
+  - /test-game 페이지가 GameCanvas dynamic import로 게임 격리 테스트 가능
+  - production build에서 /test-game이 1.74kB 정적 prerender
+
+US-002  전체 흐름 mock 모드 ✅
+  - api.ts mock이 localStorage('startup_run:mock_player') 단일 키에 누적
+  - Step1~4가 같은 mock_player에 fields merge
+  - is_verified는 모든 필드 채워지면 자동 true → /play 통과
+  - DeathCard handlePlayAgain이 fresh startGame으로 새 세션 시작
+
+US-003  api.ts ↔ Edge Function 계약 통일 ✅
+  - registerPlayer(nickname: string): Player  ← {nickname} body
+  - updatePlayer(step: 2|3|4, fields): Player  ← {step, fields} body
+  - startGame(): { game_session_id, expires_at }  ← no body
+  - submitScore({ game_session_id, score, duration_ms, death_cause, milestones }): Result
+  - ApiError class 추가, status code 기반 에러 처리
+  - Step1: registerPlayer 한 번만 (이전: register + update 두 번)
+  - Step2/3/4: updatePlayer(step, fields) 시그니처
+  - play/page.tsx: submitScore에 game_session_id, death_cause 키 사용
+
+US-004  디자인 절대 룰 감사 ✅
+  - rounded-* 클래스 0건
+  - blur/backdrop-blur 0건
+  - bg-gradient-* / from-* / to-* 0건
+  - 이모지 (이전 작업에서 모두 제거) 0건
+  - ★ 심볼은 comments에만 (rendered 텍스트는 '*' 사용)
+  - CSS gradient는 globals.css의 CRT 스캔라인 + 비네팅만 (PRD §8 명시된 의도)
+  - globals.css `border-radius: 0 !important` 강제 유지
+
+US-005  통합 검증 ✅
+  - npm run type-check: 0 errors
+  - npm run build: ✓ 11/11 정적 prerender
+  - 모든 라우트 (/  /register/step1~4  /play  /leaderboard  /test-game) curl 200
+  - Phaser chunk 분리 확인 (메인 번들에 포함 안 됨)
+
+US-006  README.md ✅
+  - Quickstart, 환경변수 5개 표, 폴더 구조 트리
+  - npm 스크립트 표, Supabase + Vercel 배포 가이드
+  - /test-game 용도 + 프로덕션 제거 안내, 디자인 룰 요약
+  - 남은 작업 체크리스트 (PRD.md §11 참조)
+
+US-007  PRD 로그 + 검증 ✅
+  - PRD.md §0 현재 단계: v1 코드 베이스 완성으로 업데이트
+  - §11 체크리스트: 통합 이슈 모두 해결로 표시
+  - §12 의사결정 로그: 2026-05-19 v1 ralph 항목 추가
+  - prd.json 모든 스토리 passes:true
+
+LEARNINGS
+=========
+- Phaser 3 scene 초기화: `scene: [Class]` 자동 시작 시 init에 empty data 전달 → 후속 start가 재초기화 안 함. `game.scene.add(key, class, autoStart=true, data)` 패턴이 안전.
+- Next.js dynamic import + ssr:false가 Phaser SSR 호환성 해결 (window 참조 안전)
+- TailwindCSS arbitrary value `text-[Npx]`에 대한 sed 일괄 변환 — 역순(큰→작은) 순서로 처리해야 chain replacement 회피
+- mockPlayer를 localStorage 단일 키에 저장 → 페이지 navigate 간 상태 보존. usePlayer cache와는 별도 키 (mock_player는 api 내부 상태, player_cache는 UI 컴포넌트용)
+
+NEXT (사용자 의존)
+==================
+- 픽셀 스프라이트 8-12개 (현재 placeholder 색사각형, AGENTS.md TODO 마커 있음)
+- BGM/SFX OpenGameArt CC0 셀렉
+- 학과 마스터 리스트 (현재 임시 15개)
+- 대회 주최 측 컨펌: 창업원 명칭 / 공식홈 URL / 책임자 / 약관 검토
+- 공유 og:image 자동 생성 (사망 점수카드 → @vercel/og 또는 satori)
+- Supabase 프로젝트 생성 + .env.local 채우기 + Vercel 연결

@@ -1,0 +1,23 @@
+node_modules
+.next
+out
+.env
+.env.local
+.env*.local
+*.tsbuildinfo
+.DS_Store
+next-env.d.ts
+.vercel
+.turbo
+
+# OMC ralph 세션 state (로컬 전용)
+.omc/state/
+
+# Editor
+.idea
+.vscode
+*.swp
+
+# Supabase 로컬 임시 파일
+supabase/.temp/
+supabase/.branches/

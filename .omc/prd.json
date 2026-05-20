@@ -1,0 +1,114 @@
+{
+  "title": "STARTUP RUN — v3 폴리시 (픽셀 + 사운드 + 애니 + og + 흐름)",
+  "objective": "외부 자산 파일 의존 없이 코드 레벨에서 픽셀 스프라이트, 칩튠 사운드, 애니메이션, og:image, 흐름 폴리시 박기.",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "프로그래밍식 픽셀 캐릭터 + 장애물 12종",
+      "priority": 1,
+      "acceptanceCriteria": [
+        "src/game/sprites.ts 신규 파일에 createPlayerSprite + createObstacleSprite export",
+        "Phaser Rectangle + Graphics 컴포지트로 후드티 청년 (머리/후드/눈/몸통/팔/다리/신발)",
+        "12종 장애물 각자 특징 살린 도트 모양",
+        "GameScene.buildPlayer가 createPlayerSprite 사용 (hitbox + sprite 분리)",
+        "GameScene.spawnObstacle이 createObstacleSprite 사용",
+        "외부 이미지/스프라이트시트 파일 dependency 0건",
+        "type-check 0 errors"
+      ],
+      "passes": true
+    },
+    {
+      "id": "US-002",
+      "title": "프로시저럴 8-bit SFX (WebAudio API)",
+      "priority": 2,
+      "acceptanceCriteria": [
+        "src/game/sound.ts SoundFX 클래스 + soundFX 싱글톤",
+        "jump/duck/collide/death/milestone/bossWarning 6개 SFX",
+        "SSR 가드 (typeof window === 'undefined')",
+        "GameScene이 점프/숙이기/사망/마일스톤/보스경고 시 soundFX.X() 호출",
+        "startGameplay에서 soundFX.init() 호출 (autoplay 정책)",
+        "외부 오디오 파일 dependency 0건",
+        "type-check 0 errors"
+      ],
+      "passes": true
+    },
+    {
+      "id": "US-003",
+      "title": "달리기 + 점프 + 사망 애니메이션",
+      "priority": 3,
+      "acceptanceCriteria": [
+        "달리기 sin 기반 다리 교차 (runTimer)",
+        "점프 시 본체 rotation -0.3 (yoyo tween)",
+        "사망 시 본체 rotation -1.0 + Y -10 튀어오름",
+        "숙이기 시 sprite scaleY 0.6 (납작)"
+      ],
+      "passes": true
+    },
+    {
+      "id": "US-004",
+      "title": "사망 화면 폴리시",
+      "priority": 4,
+      "acceptanceCriteria": [
+        "사망 시 카메라 zoomTo(1.1, 500)",
+        "DeathCard wrapper deathcard-in 280ms keyframe (opacity 0→1 + translateY 8→0)",
+        "GAME OVER 텍스트 pulse 깜빡임",
+        "type-check 0 errors"
+      ],
+      "passes": true
+    },
+    {
+      "id": "US-005",
+      "title": "og:image 공유 카드 (@vercel/og)",
+      "priority": 5,
+      "acceptanceCriteria": [
+        "@vercel/og dependency 설치됨 (package.json)",
+        "src/app/api/og/route.tsx Edge Runtime route",
+        "쿼리: ?score=&cause=&nickname=",
+        "1200×630 PNG 응답 (curl /api/og?score=137&cause=burnout 200 + PNG 매직 바이트 확인)",
+        "STARTUP RUN 로고 + GAME OVER + 점수 + 사망원인 + 푸터",
+        "Press Start 2P TTF (Google Fonts github raw) + 매직 바이트 검증 + monospace fallback",
+        "DeathCard 공유 버튼이 og URL 사용 (Web Share API + 클립보드 fallback)",
+        "build PASS (Edge route ƒ Dynamic 표기)"
+      ],
+      "passes": true
+    },
+    {
+      "id": "US-006",
+      "title": "전체 흐름 폴리시",
+      "priority": 6,
+      "acceptanceCriteria": [
+        "/play 진입 시 'interstitial' phase 추가 — '창업 시작합니다…' 픽셀 텍스트 400ms",
+        "interstitial → playing 자동 전환 (setTimeout)",
+        "한 판 더 클릭 시 새 세션으로 interstitial → playing 흐름",
+        "DeathCard 마운트 시 fade-in 애니메이션 (deathcard-in keyframe)"
+      ],
+      "passes": true
+    },
+    {
+      "id": "US-007",
+      "title": "통합 검증",
+      "priority": 7,
+      "acceptanceCriteria": [
+        "npm run type-check 0 errors",
+        "npm run build 통과",
+        "/, /register/step1~4, /play, /leaderboard, /test-game, /api/og 모두 curl 200",
+        "/api/og가 유효한 PNG (1200x630) 반환",
+        "디자인 룰 0 위반 (rounded/blur/그라데이션/이모지)",
+        "외부 자산 파일 (이미지/오디오) dependency 0건 (단, og:image용 폰트는 외부 fetch지만 fallback 있음)"
+      ],
+      "passes": true
+    },
+    {
+      "id": "US-008",
+      "title": "PRD/문서 갱신",
+      "priority": 8,
+      "acceptanceCriteria": [
+        "PRD.md §3에 픽셀 스프라이트 + 칩튠 SFX + 애니메이션 상태 반영",
+        "PRD.md §11 체크리스트 픽셀 스프라이트/SFX 체크",
+        "PRD.md §12 의사결정 로그 v3 항목 추가",
+        "progress.txt 갱신"
+      ],
+      "passes": true
+    }
+  ]
+}
