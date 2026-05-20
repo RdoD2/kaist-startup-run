@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import type { DeathCause } from '../../lib/constants';
 import { OFFICIAL_URL } from '../../lib/constants';
 import { PixelButton } from '../ui/PixelButton';
+import { usePlayer } from '../../hooks/usePlayer';
 
 // ─── 사망원인 카피 풀 (copy.md §4) ──────────────────────────────────
 const DEATH_COPY: Record<DeathCause, string[]> = {
@@ -121,6 +122,8 @@ export function DeathCard({
   onPlayAgain,
 }: DeathCardProps) {
   const router = useRouter();
+  const { player } = usePlayer();
+  const nickname = player?.nickname ?? '익명창업가';
 
   // 랜덤 사망 카피 — 렌더 시 한 번만 결정
   const deathCopy = useMemo(() => {
@@ -141,7 +144,7 @@ export function DeathCard({
   const handleShare = async () => {
     const base =
       process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
-    const ogUrl = `${base}/api/og?score=${encodeURIComponent(score)}&cause=${encodeURIComponent(deathCause)}&nickname=${encodeURIComponent('익명창업가')}`;
+    const ogUrl = `${base}/api/og?score=${encodeURIComponent(score)}&cause=${encodeURIComponent(deathCause)}&nickname=${encodeURIComponent(nickname)}&tickets=${tickets}`;
     const shareText = `나는 ${score}일 버텼다\n너는?\nSTARTUP RUN · KAIST 창업대회`;
     if (navigator.share) {
       try {

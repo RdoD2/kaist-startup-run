@@ -4,6 +4,8 @@
 // 첫 사용자 입력 후 init() 호출 (브라우저 autoplay 정책)
 // =====================================================================
 
+import { STORAGE_KEYS } from '@/lib/constants';
+
 // BGM 멜로디 (8th note 16개 = 2 마디 루프)
 // 리드: G4 B4 D5 B4 / A4 C5 E5 C5 / G4 B4 D5 B4 / A4 C5 E5 D5
 const BGM_LEAD: number[] = [
@@ -24,16 +26,33 @@ const BGM_STEP_MS = 180; // ~166 BPM 8th notes
 export class SoundFX {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
-  private enabled: boolean = true;
+  private _enabled: boolean = true;
+
+  get enabled(): boolean {
+    return this._enabled;
+  }
 
   // BGM 상태
   private bgmTimer: ReturnType<typeof setInterval> | null = null;
   private bgmStep: number = 0;
   private bgmGain: GainNode | null = null;
 
+  // localStorage에서 sound_enabled 읽어 this._enabled 초기화. 기본 true.
+  initEnabledFromStorage(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = localStorage.getItem(STORAGE_KEYS.soundEnabled);
+      // 명시적으로 'false'가 저장된 경우에만 비활성화
+      this._enabled = stored !== 'false';
+    } catch {
+      // localStorage 접근 불가 환경 — 기본값 유지
+    }
+  }
+
   // 첫 사용자 인터랙션 후 호출. AudioContext 생성.
   init(): void {
     if (typeof window === 'undefined') return;
+    this.initEnabledFromStorage();
     if (this.ctx) return;
     try {
       const AudioCtx =
@@ -50,7 +69,15 @@ export class SoundFX {
   }
 
   setEnabled(v: boolean): void {
-    this.enabled = v;
+    this._enabled = v;
+    try {
+      localStorage.setItem(STORAGE_KEYS.soundEnabled, v ? 'true' : 'false');
+    } catch {
+      // localStorage 접근 불가 환경 — 무시
+    }
+    if (!v) {
+      this.stopBGM();
+    }
   }
 
   // 짧은 비프 (200Hz → 400Hz, 80ms, square wave)
@@ -175,7 +202,7 @@ export class SoundFX {
   // =====================================================================
 
   private getCtx(): AudioContext | null {
-    if (!this.enabled) return null;
+    if (!this._enabled) return null;
     if (!this.ctx || !this.masterGain) return null;
     return this.ctx;
   }

@@ -85,7 +85,13 @@ export const STORAGE_KEYS = {
   anonToken: 'startup_run:anon_token',
   playerCache: 'startup_run:player_cache',
   lastSeenAt: 'startup_run:last_seen_at',
+  soundEnabled: 'startup_run:sound_enabled',
 } as const;
 
 export const OFFICIAL_URL =
   process.env.NEXT_PUBLIC_OFFICIAL_URL ?? 'https://example.com';
+
+// 대회 마감일 — 환경변수로 override 가능, 기본은 placeholder
+// 대회 측 확정 시 .env.local의 NEXT_PUBLIC_CAMPAIGN_DEADLINE 또는 이 값 교체
+export const CAMPAIGN_DEADLINE =
+  process.env.NEXT_PUBLIC_CAMPAIGN_DEADLINE ?? '2026-12-31T23:59:59+09:00';

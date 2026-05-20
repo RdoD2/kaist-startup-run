@@ -246,7 +246,7 @@ UI: **"내 응모권 248장 · 한 판 더해서 +α 받기"**
 
 ### 카피 / 데이터
 - [ ] 학과 마스터 리스트 (현재 임시 15개)
-- [ ] 타임라인 확정 → 마감 D-day 카운터
+- [x] 마감 D-day 카운터 컴포넌트 (DDayCounter, CAMPAIGN_DEADLINE 상수, env override) — 마감일 확정 시 `src/lib/constants.ts` 또는 `NEXT_PUBLIC_CAMPAIGN_DEADLINE` 환경변수 교체
 
 ### 대회 주최 측 컨펌 필요
 - [ ] KAIST 창업원 정식 명칭
@@ -275,3 +275,4 @@ UI: **"내 응모권 248장 · 한 판 더해서 +α 받기"**
 | 2026-05-19 | v1 ralph 루프 — 폰트 일괄 1.5~2배 업, Phaser 씬 init 데이터 주입 버그 수정 (`game.scene.add()`), /test-game 격리 페이지, api.ts ↔ Edge Function 계약 통일, mock 누적 상태, README.md 작성. 9개 라우트 200, type-check + build PASS |
 | 2026-05-19 | v2 ralph 루프 — 게임 단순화: 파워업(시드/멘토/엔젤) 전면 제거, `powerups.ts` 삭제, 피봇 deadly로 변환. Chrome 공룡 스타일 튜토리얼 idle 상태 추가 (첫 탭까지 정지 + 안내 텍스트). type-check + build + 8 라우트 200 PASS |
 | 2026-05-19 | v3 ralph 루프 — 폴리시 박스. `sprites.ts` 신규 (Phaser Graphics 코드 픽셀 캐릭터/장애물 12종), `sound.ts` 신규 (WebAudio 프로시저럴 SFX 6종), 달리기/점프/사망 애니, 사망 zoom + DeathCard fade, `/api/og` Edge route 1200×630 PNG, /play 인터스티셜 400ms. 9 라우트 + /api/og 200, type-check + build PASS, 디자인 룰 0 위반 |
+| 2026-05-20 | v4 ralph 루프 — og:image에 실제 닉네임 + 픽셀 캐릭터 + 응모권 표시, 사운드 ON/OFF 토글 (HUD + localStorage 영속), D-day 카운터 (`DDayCounter`, KST 자정 컷오프, 랜딩 우상단), `CAMPAIGN_DEADLINE` 상수 + env override. type-check + build + 8 라우트 + /api/og 200, 디자인 룰 0 위반 |

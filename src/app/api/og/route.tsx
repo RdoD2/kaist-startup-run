@@ -21,6 +21,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   const score = searchParams.get('score') ?? '0';
   const cause = searchParams.get('cause') ?? 'burnout';
   const nickname = searchParams.get('nickname') ?? '익명창업가';
+  const tickets = parseInt(searchParams.get('tickets') ?? '0', 10);
 
   const causeLabel = DEATH_LABEL[cause] ?? '알 수 없는 이유로 망했습니다';
 
@@ -49,6 +50,13 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   const pixelFont = fontBuffer ? 'PressStart2P, monospace' : 'monospace';
 
+  // Pixel character colors
+  const C_CREAM = '#fff1e8';
+  const C_HOOD = '#1d2b53';
+  const C_SHADOW = '#003875';
+  const C_SKIN = '#ffccaa';
+  const C_SHOE = '#29adff';
+
   return new ImageResponse(
     (
       <div
@@ -57,12 +65,11 @@ export async function GET(request: NextRequest): Promise<Response> {
           height: '630px',
           background: '#000000',
           display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
+          flexDirection: 'row',
           fontFamily: pixelFont,
           position: 'relative',
           border: '8px solid #fff1e8',
+          overflow: 'hidden',
         }}
       >
         {/* KAIST blue accent bar top */}
@@ -77,7 +84,6 @@ export async function GET(request: NextRequest): Promise<Response> {
             display: 'flex',
           }}
         />
-
         {/* KAIST blue accent bar bottom */}
         <div
           style={{
@@ -91,92 +97,298 @@ export async function GET(request: NextRequest): Promise<Response> {
           }}
         />
 
-        {/* Logo */}
+        {/* ── LEFT 40%: pixel character ── */}
         <div
           style={{
-            fontSize: '28px',
-            color: '#003875',
-            letterSpacing: '6px',
-            marginBottom: '32px',
-            textShadow: '3px 3px 0 #fff1e8',
+            width: '40%',
             display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
           }}
         >
-          STARTUP RUN
+          {/* Character container — absolute positioned pixel art */}
+          <div style={{ position: 'relative', width: '160px', height: '240px', display: 'flex' }}>
+            {/* Head */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '0px',
+                left: '32px',
+                width: '96px',
+                height: '80px',
+                background: C_SKIN,
+                display: 'flex',
+              }}
+            />
+            {/* Hood top */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '0px',
+                left: '16px',
+                width: '128px',
+                height: '40px',
+                background: C_HOOD,
+                display: 'flex',
+              }}
+            />
+            {/* Hood sides left */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '0px',
+                left: '16px',
+                width: '32px',
+                height: '96px',
+                background: C_HOOD,
+                display: 'flex',
+              }}
+            />
+            {/* Hood sides right */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '0px',
+                left: '112px',
+                width: '32px',
+                height: '96px',
+                background: C_HOOD,
+                display: 'flex',
+              }}
+            />
+            {/* Eye left */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '48px',
+                left: '52px',
+                width: '16px',
+                height: '16px',
+                background: '#000',
+                display: 'flex',
+              }}
+            />
+            {/* Eye right */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '48px',
+                left: '92px',
+                width: '16px',
+                height: '16px',
+                background: '#000',
+                display: 'flex',
+              }}
+            />
+            {/* Body */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '80px',
+                left: '24px',
+                width: '112px',
+                height: '96px',
+                background: C_HOOD,
+                display: 'flex',
+              }}
+            />
+            {/* Body shadow */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '80px',
+                left: '128px',
+                width: '8px',
+                height: '96px',
+                background: C_SHADOW,
+                display: 'flex',
+              }}
+            />
+            {/* Arm left */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '88px',
+                left: '0px',
+                width: '24px',
+                height: '72px',
+                background: C_HOOD,
+                display: 'flex',
+              }}
+            />
+            {/* Arm right */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '88px',
+                left: '136px',
+                width: '24px',
+                height: '72px',
+                background: C_HOOD,
+                display: 'flex',
+              }}
+            />
+            {/* Leg left */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '176px',
+                left: '32px',
+                width: '40px',
+                height: '48px',
+                background: C_CREAM,
+                display: 'flex',
+              }}
+            />
+            {/* Leg right */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '176px',
+                left: '88px',
+                width: '40px',
+                height: '48px',
+                background: C_CREAM,
+                display: 'flex',
+              }}
+            />
+            {/* Shoe left */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '216px',
+                left: '24px',
+                width: '48px',
+                height: '24px',
+                background: C_SHOE,
+                display: 'flex',
+              }}
+            />
+            {/* Shoe right */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '216px',
+                left: '88px',
+                width: '48px',
+                height: '24px',
+                background: C_SHOE,
+                display: 'flex',
+              }}
+            />
+          </div>
         </div>
 
-        {/* GAME OVER header */}
+        {/* ── RIGHT 60%: info panel ── */}
         <div
           style={{
-            fontSize: '48px',
-            color: '#ff004d',
-            letterSpacing: '4px',
-            marginBottom: '40px',
-            textShadow: '4px 4px 0 #7e2553',
-            display: 'flex',
-          }}
-        >
-          GAME OVER
-        </div>
-
-        {/* Score box */}
-        <div
-          style={{
-            border: '4px solid #fff1e8',
-            padding: '24px 48px',
-            marginBottom: '24px',
+            width: '60%',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            gap: '16px',
-            background: '#1d2b53',
-            boxShadow: '6px 6px 0 #003875',
+            justifyContent: 'center',
+            paddingRight: '48px',
+            paddingTop: '24px',
+            paddingBottom: '24px',
+            gap: '20px',
           }}
         >
-          <div
-            style={{
-              fontSize: '20px',
-              color: '#c2c3c7',
-              letterSpacing: '2px',
-              display: 'flex',
-            }}
-          >
-            {nickname}
-          </div>
-          <div
-            style={{
-              fontSize: '52px',
-              color: '#ffec27',
-              letterSpacing: '2px',
-              textShadow: '4px 4px 0 #ab5236',
-              display: 'flex',
-            }}
-          >
-            창업 {score}일차
-          </div>
+          {/* Logo */}
           <div
             style={{
               fontSize: '22px',
-              color: '#fff1e8',
-              letterSpacing: '1px',
+              color: '#003875',
+              letterSpacing: '6px',
+              textShadow: '3px 3px 0 #fff1e8',
               display: 'flex',
             }}
           >
-            {causeLabel}
+            STARTUP RUN
           </div>
-        </div>
 
-        {/* Footer CTA */}
-        <div
-          style={{
-            fontSize: '18px',
-            color: '#5f574f',
-            letterSpacing: '2px',
-            marginTop: '16px',
-            display: 'flex',
-          }}
-        >
-          KAIST 창업대회 · kaist-startup-run.vercel.app
+          {/* GAME OVER */}
+          <div
+            style={{
+              fontSize: '52px',
+              color: '#ff004d',
+              letterSpacing: '4px',
+              textShadow: '4px 4px 0 #7e2553',
+              display: 'flex',
+            }}
+          >
+            GAME OVER
+          </div>
+
+          {/* Score box */}
+          <div
+            style={{
+              border: '4px solid #fff1e8',
+              padding: '20px 28px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              background: '#1d2b53',
+              boxShadow: '6px 6px 0 #003875',
+            }}
+          >
+            {/* Nickname */}
+            <div
+              style={{
+                fontSize: '18px',
+                color: '#c2c3c7',
+                letterSpacing: '2px',
+                display: 'flex',
+              }}
+            >
+              {nickname}
+            </div>
+            {/* Score */}
+            <div
+              style={{
+                fontSize: '44px',
+                color: '#ffec27',
+                letterSpacing: '2px',
+                textShadow: '4px 4px 0 #ab5236',
+                display: 'flex',
+              }}
+            >
+              창업 {score}일차
+            </div>
+            {/* Cause */}
+            <div
+              style={{
+                fontSize: '18px',
+                color: '#fff1e8',
+                letterSpacing: '1px',
+                display: 'flex',
+              }}
+            >
+              {causeLabel}
+            </div>
+            {/* Tickets */}
+            <div
+              style={{
+                fontSize: '16px',
+                color: '#29adff',
+                letterSpacing: '1px',
+                display: 'flex',
+              }}
+            >
+              응모권 {tickets}장 획득
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div
+            style={{
+              fontSize: '14px',
+              color: '#5f574f',
+              letterSpacing: '2px',
+              display: 'flex',
+            }}
+          >
+            STARTUP RUN · KAIST 창업대회 응모 · kaist-startup-run.vercel.app
+          </div>
         </div>
       </div>
     ),

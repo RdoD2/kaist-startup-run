@@ -10,11 +10,18 @@ export type InputCallback = {
   onDuck: () => void;
 };
 
+export type InputOptions = {
+  // 이 Y 좌표 이하에서 시작된 포인터 이벤트만 점프/덕 처리
+  // 상단 HUD 버튼 영역 충돌 방지용
+  pointerGuardTopPx?: number;
+};
+
 const SWIPE_THRESHOLD = 40;
 
 export class InputHandler {
   private scene: Phaser.Scene;
   private callbacks: InputCallback;
+  private pointerGuardTopPx: number;
 
   private touchStartY: number = 0;
   private didSwipe: boolean = false;
@@ -23,9 +30,10 @@ export class InputHandler {
   private spaceKey?: Phaser.Input.Keyboard.Key;
   private downKey?: Phaser.Input.Keyboard.Key;
 
-  constructor(scene: Phaser.Scene, callbacks: InputCallback) {
+  constructor(scene: Phaser.Scene, callbacks: InputCallback, options: InputOptions = {}) {
     this.scene = scene;
     this.callbacks = callbacks;
+    this.pointerGuardTopPx = options.pointerGuardTopPx ?? 0;
     this.register();
   }
 
@@ -33,6 +41,7 @@ export class InputHandler {
     const { scene } = this;
 
     scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      if (pointer.y < this.pointerGuardTopPx) return;
       this.touchStartY = pointer.y;
       this.didSwipe = false;
       this.pointerDownActive = true;

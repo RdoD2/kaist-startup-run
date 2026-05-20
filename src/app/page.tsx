@@ -12,6 +12,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { PrizeRain } from '../components/PrizeRain/PrizeRain';
 import { usePlayer } from '../hooks/usePlayer';
+import { DDayCounter } from '../components/DDayCounter/DDayCounter';
+import { CAMPAIGN_DEADLINE } from '../lib/constants';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -41,6 +43,11 @@ export default function LandingPage() {
     <div className="relative min-h-screen bg-ink-0 flex flex-col items-center justify-center max-w-[360px] mx-auto overflow-hidden">
       {/* 배경 PrizeRain 캔버스 */}
       <PrizeRain />
+
+      {/* D-day 카운터 — 우상단 고정 */}
+      <div className="absolute top-5 right-4 z-10">
+        <DDayCounter deadline={CAMPAIGN_DEADLINE} />
+      </div>
 
       {/* 전면 UI — z-index 올려서 캔버스 위에 */}
       <div className="relative z-10 flex flex-col items-center gap-6 px-6 pointer-events-none">

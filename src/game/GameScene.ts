@@ -92,6 +92,8 @@ export class GameScene extends Phaser.Scene {
   private scoreTxt!: Phaser.GameObjects.Text;
   private milestoneOverlay!: Phaser.GameObjects.Text;
   private bossWarningTxt!: Phaser.GameObjects.Text;
+  private soundBtnTxt!: Phaser.GameObjects.Text;
+  private soundBtnBg!: Phaser.GameObjects.Graphics;
 
   // 튜토리얼
   private tutorialMain!: Phaser.GameObjects.Text;
@@ -144,10 +146,14 @@ export class GameScene extends Phaser.Scene {
 
     this.bossManager = new BossManager();
 
-    this.inputHandler = new InputHandler(this, {
-      onJump: () => this.handleJump(),
-      onDuck: () => this.handleDuck(),
-    });
+    this.inputHandler = new InputHandler(
+      this,
+      {
+        onJump: () => this.handleJump(),
+        onDuck: () => this.handleDuck(),
+      },
+      { pointerGuardTopPx: 30 },
+    );
 
     // idle 상태: 첫 탭 기다림
     this.waitingForFirstInput = true;
@@ -398,6 +404,56 @@ export class GameScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(20)
       .setVisible(false);
+
+    // 사운드 ON/OFF 토글 버튼 (우상단)
+    const btnEnabled = soundFX.enabled;
+    const btnLabel = btnEnabled ? 'SND ON' : 'SND OFF';
+    const btnColor = btnEnabled ? '#00e436' : '#5f574f';
+
+    // 텍스트 먼저 생성해 크기 측정
+    this.soundBtnTxt = this.add.text(0, 0, btnLabel, {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '10px',
+      color: btnColor,
+      resolution: 2,
+    }).setDepth(11);
+
+    // 텍스트 크기 기반으로 배경 박스 계산
+    const pad = 4;
+    const btnW = this.soundBtnTxt.width + pad * 2;
+    const btnH = this.soundBtnTxt.height + pad * 2;
+    const btnX = CANVAS.width - 12 - btnW; // 우측에서 12px 여백
+    const btnY = 8;
+
+    this.soundBtnTxt.setPosition(btnX + pad, btnY + pad);
+
+    // 테두리 박스 (Graphics)
+    this.soundBtnBg = this.add.graphics().setDepth(11);
+    this.soundBtnBg.lineStyle(2, PALETTE.ink7, 1);
+    this.soundBtnBg.strokeRect(btnX, btnY, btnW, btnH);
+
+    // 클릭 영역 — 투명 rect
+    const hitZone = this.add.rectangle(
+      btnX + btnW / 2,
+      btnY + btnH / 2,
+      btnW,
+      btnH,
+      0x000000,
+      0,
+    )
+      .setDepth(12)
+      .setInteractive({ useHandCursor: true });
+
+    hitZone.on('pointerdown', () => {
+      const next = !soundFX.enabled;
+      soundFX.setEnabled(next);
+      this.soundBtnTxt.setText(next ? 'SND ON' : 'SND OFF');
+      this.soundBtnTxt.setColor(next ? '#00e436' : '#5f574f');
+      // BGM: ON으로 전환 시 게임 active 상태면 재시작
+      if (next && this.gameActive) {
+        soundFX.startBGM();
+      }
+    });
   }
 
   private buildTutorial(): void {

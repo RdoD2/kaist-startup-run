@@ -110,6 +110,19 @@ mock 모드가 비활성화되려면 `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_S
 
 ---
 
+## 대회 마감일 설정 (D-day 카운터)
+
+랜딩 페이지 우상단 D-day 카운터 날짜를 변경하는 방법:
+
+- **코드 직접 수정**: `src/lib/constants.ts`의 `CAMPAIGN_DEADLINE` 값 교체
+- **환경변수 (권장)**: `.env.local`에 `NEXT_PUBLIC_CAMPAIGN_DEADLINE` 설정
+  ```
+  NEXT_PUBLIC_CAMPAIGN_DEADLINE=2026-08-15T23:59:59+09:00
+  ```
+- ISO 8601 형식 + `+09:00` KST timezone 권장
+
+---
+
 ## 트러블슈팅
 
 **"이미 등록된 학번이야"** — 학번 unique 제약 위반. 동일 학번 중복 등록 차단됨.
