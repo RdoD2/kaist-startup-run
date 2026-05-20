@@ -1,78 +1,75 @@
-RALPH SESSION — STARTUP RUN v3 (폴리시)
+RALPH SESSION — STARTUP RUN v4 (최종 폴리시)
 ===============================
-Start: 2026-05-19
-End:   2026-05-19
+Start: 2026-05-20
+End:   2026-05-20
 
-VERDICT: passes:true all stories. Pending architect verification.
+VERDICT: All 6 stories passes:true. Pending architect verification.
 DESLOP: --no-deslop
 
-v3 CHANGES
+v4 CHANGES
 ==========
 
-US-001  픽셀 캐릭터 + 12종 장애물 ✅
-  - src/game/sprites.ts (289줄) 신규
-  - createPlayerSprite: 머리/후드/눈/몸통/팔/다리/신발 Rectangle 컴포지트
-  - createObstacleSprite: 12종 각자 특징 살린 픽셀 도트 (PASS=양복+X, 번아웃=좀비, 코파운더=짐, 경쟁=화살, AWS=직사각형+텍스트 등)
-  - GameScene: player를 hitbox(invisible AABB) + sprite(시각 Container) 분리
-  - 외부 이미지 파일 dependency 0
+US-001  og:image 닉네임 + 디자인 폴리시 ✅
+  - DeathCard.tsx: usePlayer 훅으로 실제 nickname 가져옴 (fallback '익명창업가')
+  - DeathCard.tsx handleShare: og URL에 score+cause+nickname+tickets 4개 쿼리 전달
+  - src/app/api/og/route.tsx 재작성:
+    - tickets 쿼리 파라미터 추가
+    - 좌측 40% 픽셀 캐릭터 컴포지트 (후드티 사람, 16개 div absolute positioned)
+    - 우측 60% 정보 패널 (STARTUP RUN 로고 + GAME OVER + 점수카드 박스 + 응모권 N장 + 푸터)
+  - curl /api/og?score=137&cause=burnout&nickname=test&tickets=100 → 200 PNG (1200x630, 35KB)
 
-US-002  WebAudio 8-bit SFX ✅
-  - src/game/sound.ts (157줄) 신규
-  - SoundFX 클래스 + soundFX 싱글톤
-  - jump (200→400Hz square), duck (300→200Hz), collide (노이즈), death (200→50Hz fall), milestone (C-E-G arpeggio), bossWarning (300Hz × 3)
-  - SSR 가드, autoplay 정책 init() 분리
-  - GameScene 5곳 hook (점프/숙이기/사망/마일스톤/보스경고)
-  - 외부 오디오 파일 dependency 0
+US-002  사운드 ON/OFF 토글 ✅
+  - constants.ts STORAGE_KEYS에 soundEnabled 추가
+  - sound.ts:
+    - `_enabled` 필드 + public getter
+    - initEnabledFromStorage() 메서드 — localStorage 'false' 명시 시만 비활성화
+    - init()에서 자동 호출
+    - setEnabled(v): localStorage 저장 + false 시 stopBGM()
+  - input.ts: InputOptions { pointerGuardTopPx? } 추가 — 버튼 영역 (y < 30) pointer 가드
+  - GameScene.ts buildHUD:
+    - soundBtnTxt + soundBtnBg 필드
+    - 우상단 'SND ON' / 'SND OFF' 텍스트 + Graphics 테두리
+    - setInteractive + pointerdown → 토글 + UI 즉시 갱신
+  - GameScene.ts InputHandler 호출 시 { pointerGuardTopPx: 30 } 전달
+  - 새로고침 후에도 상태 유지 (localStorage 복원)
 
-US-003  애니메이션 ✅
-  - 달리기: runTimer + sin 기반 다리 교차
-  - 점프: 본체 rotation -0.3 yoyo tween (이미 있음)
-  - 사망: rotation -1.0 + Y -10 튀어오름
-  - 숙이기: sprite scaleY 0.6 → 1.0
+US-003  D-day 카운터 컴포넌트 ✅
+  - src/components/DDayCounter/DDayCounter.tsx 신규 (44줄)
+  - calcDDay(): KST 자정 컷오프 기반 (now + 9h, deadline + 9h, /86400000 floor)
+  - status별 색: future ink-10 (yellow), today ink-8 (red), past ink-5 (gray)
+  - 픽셀 폰트 + KAIST 블루 박스 + pixel-shadow
+  - 랜딩 페이지 (src/app/page.tsx) 우상단 absolute top-5 right-4 z-10 배치
 
-US-004  사망 화면 폴리시 ✅
-  - triggerDeath: cameras.main.zoomTo(1.1, 500) 추가
-  - DeathCard wrapper: deathcard-in keyframe (opacity 0→1, translateY 8→0, 280ms)
-  - GAME OVER 텍스트: animate-pulse
-  - globals.css에 keyframe 정의
+US-004  CAMPAIGN_DEADLINE 상수 + 가이드 ✅
+  - constants.ts에 CAMPAIGN_DEADLINE export 추가 (process.env.NEXT_PUBLIC_CAMPAIGN_DEADLINE ?? '2026-12-31T23:59:59+09:00')
+  - .env.local.example: NEXT_PUBLIC_CAMPAIGN_DEADLINE 항목 추가 + 설명
+  - SETUP-SUPABASE.md: '대회 마감일 설정' 섹션 추가
+  - DDayCounter가 CAMPAIGN_DEADLINE 사용
 
-US-005  og:image 공유 카드 ✅
-  - @vercel/og dependency 설치
-  - src/app/api/og/route.tsx Edge Runtime route 신규
-  - 1200×630 PNG: STARTUP RUN 로고 + KAIST 블루 액센트 + GAME OVER + 점수카드 박스 + 푸터
-  - 사망원인 10종 한국어 매핑
-  - 폰트: Press Start 2P TTF (github raw) + 매직 바이트 검증 + monospace fallback
-    ⚠️ 초기 버전은 WOFF2 fetch → @vercel/og 미지원 → 500. TTF + magic byte validation으로 fix.
-  - DeathCard 공유 버튼: Web Share API + 클립보드 fallback + Toast
-
-US-006  흐름 폴리시 ✅
-  - PlayState에 'interstitial' phase 추가
-  - /play 진입: startGame → interstitial("창업 시작합니다…") → 400ms 후 playing
-  - handlePlayAgain도 동일 흐름
-
-US-007  통합 검증 ✅
+US-005  통합 검증 ✅
   - npm run type-check: 0 errors
-  - npm run build: ✓ 9 정적 + 1 dynamic (/api/og) prerender
-  - 8 라우트 + /api/og 모두 200
-  - /api/og 응답 = 31KB PNG (1200×630, 8-bit RGBA)
-  - 디자인 룰 0 위반 (rounded/blur/그라데이션/이모지)
+  - npm run build: 9 정적 + 1 dynamic (/api/og)
+  - 8 라우트 + /api/og 모두 curl 200
+  - /api/og PNG 매직 바이트 확인 (1200x630 8-bit RGBA)
+  - 디자인 룰 0 위반 (rounded/blur/그라데이션/이모지 grep 0건)
 
-US-008  문서 갱신 ✅
-  - PRD.md §11: 픽셀/SFX/og 체크박스 ON
-  - PRD.md §12: v3 의사결정 로그 항목 추가
-  - progress.txt: 본 파일
+US-006  PRD/문서/git ✅
+  - PRD.md §11 체크리스트: D-day 카운터 체크 + 교체 가이드 명시
+  - PRD.md §12 v4 항목 추가 (2026-05-20)
+  - progress.txt (본 파일)
+  - git commit + push to RdoD2/kaist-startup-run main (commit 4695ca2)
 
 LEARNINGS
 =========
-- @vercel/og는 TTF/OTF/WOFF 지원, WOFF2 미지원. 매직 바이트(0x00010000=TTF, 'OTTO'=OTF) 검증으로 fallback 안전성 확보.
-- WebAudio는 첫 user-gesture 이후 AudioContext 생성 필수 (autoplay policy).
-- Phaser Container로 hitbox/sprite 분리 → 충돌은 AABB rect, 시각은 컨테이너. 깔끔.
-- Next.js Edge route에서 fetch GitHub raw는 SSR/edge 환경에서 가능 (테스트됨).
-- WebAudio 모든 API SSR 가드 필수 (window undefined).
+- Phaser HUD 인터랙티브 영역과 게임 입력 영역 분리 패턴: InputHandler에 pointerGuardTopPx 옵션 → pointer.y < threshold 시 점프/덕 콜백 무시. UI 영역 위에 토글 버튼 배치 가능.
+- @vercel/og 안에서 픽셀 캐릭터: HTML/JSX divs 컴포지트로 충분 (img 불필요). 모든 자식이 display: flex 또는 단일 텍스트면 OK.
+- D-day KST 자정 컷오프: now + 9h, deadline + 9h, /86400000 floor 후 차이. timezone 정확.
+- localStorage sound_enabled: 명시적 'false' 저장된 경우만 비활성화 → 기본 true 유지 + 한 번 끄면 영속.
 
-NEXT (사용자 의존, 변경 없음)
+NEXT (사용자 의존)
 ==================
-- BGM (선택, 현재 SFX-only)
-- Supabase 키 + Vercel 연결
-- 대회 주최 측 컨펌 4건
+- Supabase 프로젝트 생성 + .env.local 채우기 + npm run supabase:setup
+- Vercel 연결 + 도메인
+- 대회 주최 측 컨펌 4건 (창업원 명칭 / 공식홈 URL / 책임자 / 약관 검토)
 - 학과 마스터 리스트 최종
+- 마감일 확정 시 CAMPAIGN_DEADLINE 또는 NEXT_PUBLIC_CAMPAIGN_DEADLINE 교체
