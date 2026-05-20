@@ -153,6 +153,15 @@ export function createObstacleSprite(
     case 'office_drama':
       drawOfficeDrama(scene, container);
       break;
+    case 'claude_bill':
+      drawClaudeBill(scene, container);
+      break;
+    case 'domain_expired':
+      drawDomainExpired(scene, container);
+      break;
+    case 'press_leak':
+      drawPressLeak(scene, container);
+      break;
   }
 
   return container;
@@ -436,4 +445,73 @@ function drawOfficeDrama(
   g.fillStyle(PALETTE.ink8, 1);
   g.fillRect(-2, 2, 4, 10); // 세로 선
   g.fillRect(-6, 2, 12, 2); // 가로 선
+}
+
+// claude_bill: API 청구서 (영수증 형태 + "$" 마크)
+// def: 54×22 (duck — 위에 뜸)
+function drawClaudeBill(
+  scene: Phaser.Scene,
+  c: Phaser.GameObjects.Container,
+): void {
+  // 청구서 본체 (밝은 핑크)
+  addRect(scene, c, 0, 0, 48, 18, PALETTE.ink14);
+  // 상단 헤더 (어두운 줄)
+  addRect(scene, c, 0, -7, 48, 4, PALETTE.ink2);
+  // 청구서 라인 (3줄)
+  addRect(scene, c, -10, -1, 16, 2, PALETTE.ink1);
+  addRect(scene, c, -10, 3, 16, 2, PALETTE.ink1);
+  // $ 마크 (오른쪽 큰 사각)
+  addRect(scene, c, 14, 1, 10, 12, PALETTE.ink8);
+  addRect(scene, c, 14, 1, 4, 8, PALETTE.ink7); // $ 안쪽 강조
+  // 테두리
+  const g = addGfx(scene, c);
+  g.lineStyle(2, PALETTE.ink1, 1);
+  g.strokeRect(-24, -9, 48, 18);
+}
+
+// domain_expired: 만료 도메인 (404 박스 + X 표시)
+// def: 36×48
+function drawDomainExpired(
+  scene: Phaser.Scene,
+  c: Phaser.GameObjects.Container,
+): void {
+  // 브라우저 창 같은 본체 (회색)
+  addRect(scene, c, 0, 0, 30, 42, PALETTE.ink5);
+  // 상단 url 바 (어두운)
+  addRect(scene, c, 0, -16, 30, 8, PALETTE.ink1);
+  // url 바 안 점선 (도메인 텍스트 암시)
+  addRect(scene, c, -8, -16, 4, 2, PALETTE.ink7);
+  addRect(scene, c, -2, -16, 4, 2, PALETTE.ink7);
+  addRect(scene, c, 4, -16, 4, 2, PALETTE.ink7);
+  // 큰 X 마크 (빨강 — 만료/에러)
+  const g = addGfx(scene, c);
+  g.lineStyle(3, PALETTE.ink8, 1);
+  g.lineBetween(-8, -4, 8, 12);
+  g.lineBetween(8, -4, -8, 12);
+  // 하단 라벨 (404)
+  addRect(scene, c, 0, 18, 16, 4, PALETTE.ink8);
+}
+
+// press_leak: 익명 폭로 (확성기 + 점선)
+// def: 48×24 (duck — 위에 뜸)
+function drawPressLeak(
+  scene: Phaser.Scene,
+  c: Phaser.GameObjects.Container,
+): void {
+  // 확성기 본체 (사다리꼴 — 직사각형 2개로 근사)
+  addRect(scene, c, -8, 0, 20, 16, PALETTE.ink15);
+  // 확성기 입구 (오른쪽 — 더 큰 사각)
+  addRect(scene, c, 8, 0, 12, 20, PALETTE.ink15);
+  // 확성기 손잡이 (왼쪽)
+  addRect(scene, c, -18, 0, 6, 8, PALETTE.ink5);
+  // 소리 파장 (오른쪽 점선 3개)
+  const g = addGfx(scene, c);
+  g.fillStyle(PALETTE.ink8, 1);
+  g.fillRect(16, -8, 2, 2);
+  g.fillRect(19, -3, 2, 2);
+  g.fillRect(20, 4, 2, 2);
+  g.fillRect(18, 8, 2, 2);
+  // 테두리
+  g.lineStyle(2, PALETTE.ink1, 1);
+  g.strokeRect(-18, -8, 30, 16);
 }
