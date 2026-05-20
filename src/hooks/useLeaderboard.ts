@@ -15,7 +15,7 @@ const MOCK_ENTRIES: LeaderboardEntry[] = [
   { id: '2', nickname: 'PIVOT_KING', score: 998, rank: 2 },
   { id: '3', nickname: '번아웃생존자', score: 872, rank: 3 },
   { id: '4', nickname: '시드없이살기', score: 743, rank: 4 },
-  { id: '5', nickname: 'YC_REJECT', score: 601, rank: 5 },
+  { id: '5', nickname: 'VC_PASS', score: 601, rank: 5 },
   { id: '6', nickname: '밤샘코딩러', score: 522, rank: 6 },
   { id: '7', nickname: 'PMF탐색중', score: 465, rank: 7 },
   { id: '8', nickname: '데모데이통과', score: 387, rank: 8 },

@@ -131,7 +131,7 @@ export const OBSTACLE_DEFS: Record<ObstacleType, ObstacleDef> = {
   competitor: {
     type: 'competitor',
     action: 'duck',
-    label: 'YC의 카피캣',
+    label: '유니콘의 카피캣',
     color: PALETTE.ink12,
     width: 56,
     height: 22,
@@ -161,7 +161,7 @@ export const OBSTACLE_DEFS: Record<ObstacleType, ObstacleDef> = {
   aws_bill: {
     type: 'aws_bill',
     action: 'duck',
-    label: '미납된 AWS 비용',
+    label: '미납된 클라우드 비용',
     color: PALETTE.ink11,
     width: 52,
     height: 22,
@@ -171,7 +171,7 @@ export const OBSTACLE_DEFS: Record<ObstacleType, ObstacleDef> = {
   claude_bill: {
     type: 'claude_bill',
     action: 'duck',
-    label: '미친 Claude 비용',
+    label: '미친 LLM 비용',
     color: PALETTE.ink14,
     width: 54,
     height: 22,
