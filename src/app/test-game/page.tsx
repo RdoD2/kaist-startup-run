@@ -4,9 +4,10 @@
 // 게임만 격리해서 동작 확인하는 용도. 프로덕션 배포 전 제거 가능.
 // =====================================================================
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import type { GameOverResult } from '../../game';
+import { pickDeathCopy } from '../../lib/deathCopy';
 
 const GameCanvas = dynamic(() => import('../../components/GameCanvas'), {
   ssr: false,
@@ -27,6 +28,11 @@ export default function TestGamePage() {
     setResult(r);
   }, []);
 
+  const deathCopy = useMemo(
+    () => (result ? pickDeathCopy(result.deathCause) : ''),
+    [result],
+  );
+
   if (result) {
     return (
       <div className="min-h-screen bg-ink-0 flex flex-col items-center justify-center gap-6 max-w-[360px] mx-auto px-6">
@@ -37,8 +43,8 @@ export default function TestGamePage() {
           <p className="font-kor text-[20px] text-ink-7">
             창업 {result.score}일차
           </p>
-          <p className="font-kor text-[18px] text-ink-6">
-            사망원인: {result.deathCause}
+          <p className="font-kor text-[18px] text-ink-6 leading-relaxed">
+            {deathCopy}
           </p>
           <p className="font-kor text-[16px] text-ink-5">
             플레이 시간: {(result.durationMs / 1000).toFixed(1)}s

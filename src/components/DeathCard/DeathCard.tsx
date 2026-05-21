@@ -8,92 +8,9 @@ import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import type { DeathCause } from '../../lib/constants';
 import { OFFICIAL_URL } from '../../lib/constants';
+import { pickDeathCopy } from '../../lib/deathCopy';
 import { PixelButton } from '../ui/PixelButton';
 import { usePlayer } from '../../hooks/usePlayer';
-
-// ─── 사망원인 카피 풀 (copy.md §4) ──────────────────────────────────
-const DEATH_COPY: Record<DeathCause, string[]> = {
-  investor_pass: [
-    '투자자한테 PASS 당했어요',
-    'VC가 "다음 라운드에 봅시다" 했어요',
-    '데모덱 3장에서 잘렸어요',
-    '"팀이 너무 어리네요" 들었어요',
-    '10번째 거절 메일을 받았어요',
-    '시드 안 모이고 라운드 클로즈됐어요',
-  ],
-  burnout: [
-    '번아웃으로 망했어요',
-    '3일 연속 밤샘하다 쓰러졌어요',
-    '자정에 키보드에 얼굴 박았어요',
-    '월요일 출근을 못 했어요',
-    '더는 못 하겠어요',
-    '잠시 쉰다고 했다가 안 돌아왔어요',
-  ],
-  cofounder_left: [
-    '코파운더가 떠났어요',
-    'CTO가 대기업 갔어요',
-    '공동대표가 잠수 탔어요',
-    '지분 협상이 결렬됐어요',
-    '팀 단톡방이 조용해졌어요',
-    '"잠깐 생각 좀…" 후로 연락 끊겼어요',
-  ],
-  competitor: [
-    '경쟁사가 똑같은 거 출시했어요',
-    '유니콘이 무료로 풀어버렸어요',
-    '해외 유니콘이 같은 시장에 들어왔어요',
-    '카피캣한테 시장 뺏겼어요',
-    '빅테크가 비슷한 기능 발표했어요',
-  ],
-  lawsuit: [
-    '나간 동료의 고소장이 도착했어요',
-    '경쟁사 변호사한테 내용증명 받았어요',
-    '오픈소스 라이선스 침해로 신고당했어요',
-    '약관 위반으로 단체 소송 걸렸어요',
-    '전 직원이 명예훼손으로 고소했어요',
-    '상표 침해 경고장이 왔어요',
-  ],
-  pivot_fail: [
-    '피봇하다 길을 잃었어요',
-    '5번째 피봇 끝에 헤맸어요',
-    '타겟 시장이 다시 안 보여요',
-    'PMF를 영영 못 찾았어요',
-    '팀이 방향을 잃었어요',
-  ],
-  demo_day: [
-    '데모데이 무대에서 망했어요',
-    '심사위원 5명 다 무표정이었어요',
-    '데모덱 30초 만에 잘렸어요',
-    'Q&A에서 한 마디도 못 했어요',
-    '"그래서 비즈니스 모델이 뭐죠?" 들었어요',
-  ],
-  cash_dry: [
-    '밀린 월세에 사무실에서 쫓겨났어요',
-    '미납된 클라우드 비용이 6자리 찍혔어요',
-    '미친 LLM API 비용에 카드가 정지됐어요',
-    '도메인 갱신 잊고 회사 사이트가 사라졌어요',
-    '런웨이가 새벽 3시에 끝났어요',
-    '4대 보험비도 못 내고 직원 월급도 밀렸어요',
-    '카드값 막다가 신용불량 됐어요',
-    'AI API 청구서 보고 졸도했어요',
-  ],
-  regulation: [
-    '국세청 출장팀이 사무실로 직행했어요',
-    '개인정보위에 익명 제보 들어갔어요',
-    '식약처/금감원이 갑자기 멈추라고 했어요',
-    '신사업이 어제부로 불법이 됐어요',
-    '규제 샌드박스 탈락 통보 받았어요',
-    '국정감사 명단에 회사 이름이 떴어요',
-  ],
-  product_fail: [
-    '프로덕션에 치명적 버그가 터졌어요',
-    '데이터베이스를 통째로 날렸어요',
-    '익명 제보 폭로가 트위터에 뜨겁어요',
-    '핵심 기능이 데모데이 30초 전에 멈췄어요',
-    '유저들 환불 요청이 폭주했어요',
-    '앱스토어 리뷰가 별 한 개로 도배됐어요',
-    'NPM 패키지에 0day 박혔어요',
-  ],
-};
 
 type DeathCardProps = {
   score: number;
@@ -132,10 +49,7 @@ export function DeathCard({
   const nickname = player?.nickname ?? '익명창업가';
 
   // 랜덤 사망 카피 — 렌더 시 한 번만 결정
-  const deathCopy = useMemo(() => {
-    const pool = DEATH_COPY[deathCause];
-    return pool[Math.floor(Math.random() * pool.length)];
-  }, [deathCause]);
+  const deathCopy = useMemo(() => pickDeathCopy(deathCause), [deathCause]);
 
   const [toast, setToast] = useState<{ msg: string; visible: boolean }>({
     msg: '',
