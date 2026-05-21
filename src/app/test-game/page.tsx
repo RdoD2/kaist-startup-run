@@ -49,11 +49,6 @@ export default function TestGamePage() {
           <p className="font-kor text-[16px] text-ink-5">
             플레이 시간: {(result.durationMs / 1000).toFixed(1)}s
           </p>
-          <p className="font-kor text-[16px] text-ink-5">
-            마일스톤: 100={String(result.milestones[100])} / 365=
-            {String(result.milestones[365])} / 1000=
-            {String(result.milestones[1000])}
-          </p>
         </div>
         <button
           className="btn-pixel font-pixel text-[18px] mt-6"
