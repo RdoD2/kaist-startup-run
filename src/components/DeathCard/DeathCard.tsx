@@ -4,10 +4,10 @@
 // 점수 + 사망원인 랜덤 카피 + 응모권 + CTA 3개
 // =====================================================================
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { DeathCause } from '../../lib/constants';
-import { OFFICIAL_URL } from '../../lib/constants';
+import { OFFICIAL_URL, GRAVITY_URL, REPLAY_LOCK_MS } from '../../lib/constants';
 import { pickDeathCopy } from '../../lib/deathCopy';
 import { PixelButton } from '../ui/PixelButton';
 import { usePlayer } from '../../hooks/usePlayer';
@@ -50,6 +50,19 @@ export function DeathCard({
 
   // 랜덤 사망 카피 — 렌더 시 한 번만 결정
   const deathCopy = useMemo(() => pickDeathCopy(deathCause), [deathCause]);
+
+  // REPLAY 잠금 + Gravity 홍보 슬라이드
+  const [secondsLeft, setSecondsLeft] = useState(
+    Math.ceil(REPLAY_LOCK_MS / 1000),
+  );
+  const replayReady = secondsLeft <= 0;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSecondsLeft((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [toast, setToast] = useState<{ msg: string; visible: boolean }>({
     msg: '',
@@ -131,16 +144,45 @@ export function DeathCard({
           )}
         </div>
 
+        {/* Gravity 홍보 — REPLAY 잠금 동안 스으윽 슬라이드 다운 */}
+        <a
+          href={GRAVITY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block overflow-hidden"
+          style={{
+            maxHeight: replayReady ? '220px' : '0px',
+            opacity: replayReady ? 1 : 0,
+            transition: 'max-height 500ms ease-out, opacity 400ms ease-out 100ms',
+            pointerEvents: replayReady ? 'auto' : 'none',
+          }}
+        >
+          <div className="border-2 border-kaist bg-kaist px-4 py-5 flex flex-col gap-2 pixel-shadow">
+            <p className="font-pixel text-[18px] text-ink-10 tracking-widest">
+              GRAVITY 2026
+            </p>
+            <p className="font-kor text-[18px] text-ink-7 leading-relaxed">
+              KAIST 창업의 중력, 그래비티.
+              <br />
+              너의 창업도 여기서 시작돼.
+            </p>
+            <p className="font-pixel text-[14px] text-ink-15">
+              gravity2026.io 바로가기 &gt;
+            </p>
+          </div>
+        </a>
+
         {/* CTA 버튼들 */}
         <div className="flex flex-col gap-3">
-          {/* 1순위: 한 판 더 */}
+          {/* 1순위: 한 판 더 (3초 잠금 후 활성) */}
           <PixelButton
             variant="primary"
             size="lg"
             fullWidth
+            disabled={!replayReady}
             onClick={onPlayAgain}
           >
-            한 판 더
+            {replayReady ? '한 판 더' : `한 판 더 (${secondsLeft})`}
           </PixelButton>
 
           {/* 2순위: 결과 공유 */}
@@ -171,7 +213,7 @@ export function DeathCard({
             className="btn-pixel font-pixel text-[16px] text-center w-full block py-3 bg-kaist text-ink-7 border-ink-0"
             style={{ display: 'block', textAlign: 'center' }}
           >
-            KAIST 창업대회 신청하러 가기 &gt;
+            GRAVITY 2026 신청하러 가기 &gt;
           </a>
         </div>
       </div>

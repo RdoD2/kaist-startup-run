@@ -89,7 +89,13 @@ export const STORAGE_KEYS = {
 } as const;
 
 export const OFFICIAL_URL =
-  process.env.NEXT_PUBLIC_OFFICIAL_URL ?? 'https://example.com';
+  process.env.NEXT_PUBLIC_OFFICIAL_URL ?? 'https://gravity2026.io/';
+
+// Gravity 2026 창업대회 공식 사이트 (홍보 진입점)
+export const GRAVITY_URL = 'https://gravity2026.io/';
+
+// 사망 후 REPLAY 잠금 시간 (ms) — 그 사이 Gravity 홍보 노출
+export const REPLAY_LOCK_MS = 3000;
 
 // 대회 마감일 — 환경변수로 override 가능, 기본은 placeholder
 // 대회 측 확정 시 .env.local의 NEXT_PUBLIC_CAMPAIGN_DEADLINE 또는 이 값 교체
