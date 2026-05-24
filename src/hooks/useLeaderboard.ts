@@ -39,7 +39,9 @@ export function useLeaderboard(tab: LeaderboardTab, myPlayerId?: string) {
     setError(null);
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const anonKey =
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!url || !anonKey) {
       // mock 모드
@@ -53,7 +55,7 @@ export function useLeaderboard(tab: LeaderboardTab, myPlayerId?: string) {
     try {
       // 뷰: leaderboard_daily / leaderboard_all
       const viewName =
-        tab === 'daily' ? 'leaderboard_daily' : 'leaderboard_all';
+        tab === 'daily' ? 'daily_leaderboard' : 'all_time_leaderboard';
       const res = await fetch(
         `${url}/rest/v1/${viewName}?select=*&order=rank.asc&limit=100`,
         {

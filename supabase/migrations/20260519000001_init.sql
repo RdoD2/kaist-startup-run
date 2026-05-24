@@ -14,7 +14,10 @@ create type death_cause as enum (
   'competitor',        -- 경쟁사 화살
   'lawsuit',           -- 법무 이슈
   'pivot_fail',        -- 피봇 실패
-  'demo_day'           -- 데모데이 실패
+  'demo_day',          -- 데모데이 실패
+  'cash_dry',          -- 현금 소진
+  'regulation',        -- 규제 이슈
+  'product_fail'       -- 제품 버그/실패
 );
 
 -- ---------- TABLES ----------

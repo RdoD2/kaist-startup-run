@@ -1,5 +1,5 @@
 import { getServiceClient } from "./supabase.ts";
-import { errorResponse } from "./cors.ts";
+import { makeHelpers } from "./cors.ts";
 
 export type Player = {
   id: string;
@@ -17,13 +17,11 @@ export type Player = {
   updated_at: string;
 };
 
-/**
- * Authorization: Bearer {anon_token} 헤더를 파싱해서 player row를 반환.
- * 실패 시 { player: null, response: Response } 형태로 에러 응답을 반환.
- */
 export async function requirePlayer(
   req: Request,
 ): Promise<{ player: Player; response: null } | { player: null; response: Response }> {
+  const { errorResponse } = makeHelpers(req);
+
   const authHeader = req.headers.get("Authorization") ?? "";
   const match = authHeader.match(/^Bearer\s+(.+)$/i);
   if (!match) {

@@ -1,9 +1,10 @@
-import { handleCors, jsonResponse, errorResponse } from "../_shared/cors.ts";
+import { makeHelpers } from "../_shared/cors.ts";
 import { requirePlayer } from "../_shared/auth.ts";
 import { getServiceClient } from "../_shared/supabase.ts";
 
 Deno.serve(async (req: Request) => {
-  const corsResult = handleCors(req);
+  const { handleCors, jsonResponse, errorResponse } = makeHelpers(req);
+  const corsResult = handleCors();
   if (corsResult) return corsResult;
 
   if (req.method !== "GET") {

@@ -10,7 +10,10 @@ import { STORAGE_KEYS, type DeathCause } from './constants';
 const BASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1`
   : null;
-const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? null;
+const ANON_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  null;
 
 const STORAGE_MOCK_PLAYER = 'startup_run:mock_player';
 
@@ -79,7 +82,7 @@ async function edgeFetch<T>(path: string, opts: RequestInit = {}): Promise<T> {
     headers: {
       'Content-Type': 'application/json',
       apikey: ANON_KEY,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      Authorization: `Bearer ${token ?? ANON_KEY}`,
       ...(opts.headers ?? {}),
     },
   });

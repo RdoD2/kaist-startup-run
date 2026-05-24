@@ -1,4 +1,4 @@
-import { handleCors, jsonResponse, errorResponse } from "../_shared/cors.ts";
+import { makeHelpers } from "../_shared/cors.ts";
 import { requirePlayer } from "../_shared/auth.ts";
 import { getServiceClient } from "../_shared/supabase.ts";
 
@@ -11,6 +11,9 @@ const VALID_DEATH_CAUSES = new Set([
   "lawsuit",
   "pivot_fail",
   "demo_day",
+  "cash_dry",
+  "regulation",
+  "product_fail",
 ]);
 
 // PRD §3: 마일스톤 점수 기준
@@ -36,7 +39,8 @@ function validateMilestones(score: number, milestones: Milestones): string | nul
 }
 
 Deno.serve(async (req: Request) => {
-  const corsResult = handleCors(req);
+  const { handleCors, jsonResponse, errorResponse } = makeHelpers(req);
+  const corsResult = handleCors();
   if (corsResult) return corsResult;
 
   if (req.method !== "POST") {
