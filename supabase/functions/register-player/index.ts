@@ -1,11 +1,12 @@
-import { handleCors, jsonResponse, errorResponse } from "../_shared/cors.ts";
+import { makeHelpers } from "../_shared/cors.ts";
 import { getServiceClient } from "../_shared/supabase.ts";
 
 // 닉네임: 1~12자, 한글/영문/숫자만 허용
 const NICKNAME_RE = /^[가-힣a-zA-Z0-9]{1,12}$/;
 
 Deno.serve(async (req: Request) => {
-  const corsResult = handleCors(req);
+  const { handleCors, jsonResponse, errorResponse } = makeHelpers(req);
+  const corsResult = handleCors();
   if (corsResult) return corsResult;
 
   if (req.method !== "POST") {

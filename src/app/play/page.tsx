@@ -35,17 +35,18 @@ function fallbackSession(): StartGameResponse {
 
 export default function PlayPage() {
   const router = useRouter();
-  const { isVerified } = usePlayer();
+  const { isVerified, hydrated } = usePlayer();
   const [state, setState] = useState<PlayState>({ phase: 'loading' });
 
   useEffect(() => {
+    if (!hydrated) return;
     if (!isVerified) {
       router.replace('/register/step1');
     }
-  }, [isVerified, router]);
+  }, [isVerified, hydrated, router]);
 
   useEffect(() => {
-    if (!isVerified) return;
+    if (!hydrated || !isVerified) return;
     let cancelled = false;
 
     startGame()

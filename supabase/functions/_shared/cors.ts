@@ -1,27 +1,37 @@
-// TODO: 캠페인 도메인 확정되면 '*' → 실제 도메인으로 좁힐 것
-export const corsHeaders: HeadersInit = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
-  "Access-Control-Allow-Headers": "Authorization, Content-Type",
-};
+// @ts-ignore Deno runtime
+const rawOrigin = Deno.env.get("CORS_ORIGIN") ?? "*";
+const allowedOrigins = rawOrigin.split(",").map((s: string) => s.trim());
 
-export function handleCors(req: Request): Response | null {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
+function resolveOrigin(requestOrigin: string): string {
+  if (allowedOrigins.includes("*")) return "*";
+  return allowedOrigins.includes(requestOrigin) ? requestOrigin : allowedOrigins[0];
+}
+
+export function makeHelpers(req: Request) {
+  const origin = resolveOrigin(req.headers.get("Origin") ?? "");
+  const corsH: Record<string, string> = {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
+    "Access-Control-Allow-Headers": "Authorization, Content-Type, apikey",
+  };
+
+  function handleCors(): Response | null {
+    if (req.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsH });
+    }
+    return null;
   }
-  return null;
-}
 
-export function jsonResponse(
-  body: unknown,
-  status = 200,
-): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
+  function jsonResponse(body: unknown, status = 200): Response {
+    return new Response(JSON.stringify(body), {
+      status,
+      headers: { ...corsH, "Content-Type": "application/json" },
+    });
+  }
 
-export function errorResponse(message: string, status = 400): Response {
-  return jsonResponse({ error: message }, status);
+  function errorResponse(message: string, status = 400): Response {
+    return jsonResponse({ error: message }, status);
+  }
+
+  return { handleCors, jsonResponse, errorResponse };
 }
