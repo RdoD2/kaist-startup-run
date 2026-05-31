@@ -157,37 +157,49 @@ export default async function AdminPage({
 
       {/* 등록 퍼널 (깔때기) */}
       <div style={{ border: '2px solid #000', padding: '16px 20px', marginBottom: '1.5rem' }}>
-        <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '12px', letterSpacing: '0.05em' }}>
+        <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '16px', letterSpacing: '0.05em' }}>
           등록 퍼널 — 단계별 도달 인원
         </div>
         {FUNNEL.map((stage, i) => {
           const pct = totalAll ? Math.round((stage.count / totalAll) * 100) : 0;
-          // 막대 너비: 전체 대비 비율(최소 8%는 보이도록), 가운데 정렬로 깔때기 형태
-          const widthPct = totalAll ? Math.max((stage.count / totalAll) * 100, 8) : 8;
+          // 윗변 = 현재 단계 인원, 아랫변 = 다음 단계 인원 → 사다리꼴이 이어져 깔때기 형태
+          const topW = totalAll ? (stage.count / totalAll) * 100 : 0;
+          const next = FUNNEL[i + 1];
+          const botW = next && totalAll ? (next.count / totalAll) * 100 : topW;
+          const left = (100 - topW) / 2;
+          const leftB = (100 - botW) / 2;
           const prev = i > 0 ? FUNNEL[i - 1]!.count : null;
           const conv = prev && prev > 0 ? Math.round((stage.count / prev) * 100) : null;
           const dropoff = prev !== null ? prev - stage.count : null;
           return (
             <div
               key={stage.label}
-              style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
             >
               <div style={{ width: '72px', textAlign: 'right', fontSize: '11px', opacity: 0.7, whiteSpace: 'nowrap' }}>
                 {stage.label}
               </div>
-              <div style={{ flex: 1, background: '#f0f0f0', height: '26px', position: 'relative' }}>
+              {/* 깔때기 사다리꼴 한 칸 */}
+              <div style={{ flex: 1, height: '48px', position: 'relative' }}>
                 <div
                   style={{
-                    width: `${widthPct}%`,
+                    position: 'absolute',
+                    inset: 0,
+                    background: `hsl(220, 16%, ${16 + i * 8}%)`,
+                    clipPath: `polygon(${left}% 0, ${100 - left}% 0, ${100 - leftB}% 100%, ${leftB}% 100%)`,
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'relative',
                     height: '100%',
-                    margin: '0 auto',
-                    background: '#000',
-                    color: '#fff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '12px',
+                    color: '#fff',
+                    fontSize: '15px',
                     fontWeight: 'bold',
+                    textShadow: '0 0 4px rgba(0,0,0,0.9)',
                   }}
                 >
                   {stage.count}
