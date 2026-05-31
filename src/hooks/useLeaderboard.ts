@@ -33,10 +33,15 @@ export function useLeaderboard(tab: LeaderboardTab, myPlayerId?: string) {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // 상위 100위 밖이라 목록에 없을 때 따로 조회한 내 row
+  const [myFetchedEntry, setMyFetchedEntry] = useState<
+    LeaderboardEntry | undefined
+  >(undefined);
 
   const fetchLeaderboard = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setMyFetchedEntry(undefined);
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const anonKey =
@@ -52,10 +57,11 @@ export function useLeaderboard(tab: LeaderboardTab, myPlayerId?: string) {
       return;
     }
 
+    const viewName =
+      tab === 'daily' ? 'daily_leaderboard' : 'all_time_leaderboard';
+
     try {
       // 뷰: leaderboard_daily / leaderboard_all
-      const viewName =
-        tab === 'daily' ? 'daily_leaderboard' : 'all_time_leaderboard';
       const res = await fetch(
         `${url}/rest/v1/${viewName}?select=*&order=rank.asc&limit=100`,
         {
@@ -68,21 +74,43 @@ export function useLeaderboard(tab: LeaderboardTab, myPlayerId?: string) {
       if (!res.ok) throw new Error(`${res.status}`);
       const data = (await res.json()) as LeaderboardEntry[];
       setEntries(data);
+
+      // 상위 100위 안에 내가 없으면 내 row를 직접 조회 (내 위치 보장)
+      if (myPlayerId && !data.some((e) => e.id === myPlayerId)) {
+        try {
+          const meRes = await fetch(
+            `${url}/rest/v1/${viewName}?select=*&id=eq.${myPlayerId}&limit=1`,
+            {
+              headers: {
+                apikey: anonKey,
+                Authorization: `Bearer ${anonKey}`,
+              },
+            },
+          );
+          if (meRes.ok) {
+            const meData = (await meRes.json()) as LeaderboardEntry[];
+            if (meData.length > 0) setMyFetchedEntry(meData[0]);
+          }
+        } catch (meErr) {
+          // 내 row 조회 실패는 치명적이지 않음 — 목록은 그대로 노출
+          console.warn('[useLeaderboard] my-row fetch failed', meErr);
+        }
+      }
     } catch (e) {
       setError('통신 실패. 잠깐 뒤에 다시.');
       console.error('[useLeaderboard]', e);
     } finally {
       setLoading(false);
     }
-  }, [tab]);
+  }, [tab, myPlayerId]);
 
   useEffect(() => {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
 
-  // 내 위치 찾기
+  // 내 위치 찾기 — 목록 우선, 없으면 직접 조회한 row
   const myEntry = myPlayerId
-    ? entries.find((e) => e.id === myPlayerId)
+    ? entries.find((e) => e.id === myPlayerId) ?? myFetchedEntry
     : undefined;
 
   return { entries, loading, error, myEntry, refetch: fetchLeaderboard };

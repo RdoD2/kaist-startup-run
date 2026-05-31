@@ -666,7 +666,7 @@ export class GameScene extends Phaser.Scene {
 
     this.nextObstacleMs -= dt;
     if (this.nextObstacleMs <= 0) {
-      const pattern = pickRandomPattern();
+      const pattern = pickRandomPattern(this.score);
       if (pattern.sequence.length === 1) {
         this.spawnObstacle(pattern.sequence[0]!);
       } else {

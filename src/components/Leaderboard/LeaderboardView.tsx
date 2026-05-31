@@ -55,8 +55,10 @@ export function LeaderboardView({ myPlayerId, myScore }: LeaderboardViewProps) {
   const isEmpty = !loading && !error && entries.length === 0;
 
   // 내 위치를 상단에 별도 표시하는지 여부
-  // (리스트 상위에 있으면 중복 표시 안 함)
-  const myEntryInTop = myEntry ? myEntry.rank <= entries.length : false;
+  // (리스트에 이미 있으면 중복 표시 안 함)
+  const myEntryInTop = myPlayerId
+    ? entries.some((e) => e.id === myPlayerId)
+    : false;
 
   return (
     <div className="flex flex-col min-h-screen bg-ink-0 max-w-[360px] mx-auto">

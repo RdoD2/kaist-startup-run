@@ -261,7 +261,20 @@ export const BOSS_SEQUENCE: ObstacleType[] = [
   'press_leak',
 ];
 
-export function pickRandomPattern(): ObstaclePattern {
-  const idx = Math.floor(Math.random() * OBSTACLE_PATTERNS.length);
-  return OBSTACLE_PATTERNS[idx]!;
+// 점수별 허용 콤보 길이 — 초반엔 단일만, 점차 콤보 해금
+//   < 150일: 단일 장애물만 (겹침/콤보 없음, 학습 구간)
+//   < 400일: 단일 + 더블까지
+//   >= 400일: 트리플 포함 전체
+function maxSequenceLenForScore(score: number): number {
+  if (score < 150) return 1;
+  if (score < 400) return 2;
+  return 3;
+}
+
+export function pickRandomPattern(score = 0): ObstaclePattern {
+  const maxLen = maxSequenceLenForScore(score);
+  const allowed = OBSTACLE_PATTERNS.filter((p) => p.sequence.length <= maxLen);
+  const pool = allowed.length > 0 ? allowed : OBSTACLE_PATTERNS;
+  const idx = Math.floor(Math.random() * pool.length);
+  return pool[idx]!;
 }

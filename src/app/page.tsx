@@ -9,11 +9,11 @@
 // =====================================================================
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PrizeRain } from '../components/PrizeRain/PrizeRain';
 import { usePlayer } from '../hooks/usePlayer';
-import { DDayCounter } from '../components/DDayCounter/DDayCounter';
-import { CAMPAIGN_DEADLINE } from '../lib/constants';
+import { OFFICIAL_URL } from '../lib/constants';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -44,9 +44,17 @@ export default function LandingPage() {
       {/* 배경 PrizeRain 캔버스 */}
       <PrizeRain />
 
-      {/* D-day 카운터 — 우상단 고정 */}
+      {/* 공식 홈페이지 바로가기 — 우상단 고정 */}
       <div className="absolute top-5 right-4 z-10">
-        <DDayCounter deadline={CAMPAIGN_DEADLINE} />
+        <a
+          href={OFFICIAL_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 border-2 border-kaist bg-ink-1 px-3 py-2 pixel-shadow"
+        >
+          <span className="font-pixel text-[14px] text-ink-6">GRAVITY</span>
+          <span className="font-pixel text-[14px] text-ink-10">홈 &gt;</span>
+        </a>
       </div>
 
       {/* 전면 UI — z-index 올려서 캔버스 위에 */}
@@ -93,9 +101,12 @@ export default function LandingPage() {
         <span className="font-kor text-[16px] text-ink-5">
           &copy; 2026 KAIST 창업원
         </span>
-        <span className="font-kor text-[16px] text-ink-5">
-          약관 &middot; 개인정보처리방침
-        </span>
+        <Link
+          href="/privacy"
+          className="font-kor text-[16px] text-ink-5 underline hover:text-ink-7"
+        >
+          개인정보처리방침
+        </Link>
       </div>
     </div>
   );

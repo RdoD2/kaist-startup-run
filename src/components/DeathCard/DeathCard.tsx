@@ -144,18 +144,12 @@ export function DeathCard({
           )}
         </div>
 
-        {/* Gravity 홍보 — REPLAY 잠금 동안 스으윽 슬라이드 다운 */}
+        {/* Gravity 홍보 — '한 판 더' 활성 전부터 항상 노출 (잠금 동안 시선 고정) */}
         <a
           href={GRAVITY_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="block overflow-hidden"
-          style={{
-            maxHeight: replayReady ? '220px' : '0px',
-            opacity: replayReady ? 1 : 0,
-            transition: 'max-height 500ms ease-out, opacity 400ms ease-out 100ms',
-            pointerEvents: replayReady ? 'auto' : 'none',
-          }}
+          className="block"
         >
           <div className="border-2 border-kaist bg-kaist px-4 py-5 flex flex-col gap-2 pixel-shadow">
             <p className="font-pixel text-[18px] text-ink-10 tracking-widest">

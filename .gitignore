@@ -10,8 +10,8 @@ next-env.d.ts
 .vercel
 .turbo
 
-# OMC ralph 세션 state (로컬 전용)
-.omc/state/
+# OMC 로컬 전용 (state, sessions, project-memory)
+.omc/
 
 # Editor
 .idea
