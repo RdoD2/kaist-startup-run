@@ -30,10 +30,24 @@ function kstToday(): string {
   return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
+// 정렬 가능한 컬럼: 화면 라벨 → DB 컬럼
+const COLUMNS: { label: string; sort?: string; align?: 'left' | 'right' | 'center' }[] = [
+  { label: '#' },
+  { label: '닉네임', sort: 'nickname' },
+  { label: '실명', sort: 'real_name' },
+  { label: '학번', sort: 'student_id' },
+  { label: '학과', sort: 'department' },
+  { label: '등록단계', sort: 'registration_step' },
+  { label: '완료', sort: 'is_verified', align: 'center' },
+  { label: '점수(응모권)', sort: 'best_score', align: 'right' },
+  { label: '가입일시 (KST)', sort: 'created_at' },
+];
+const SORTABLE = new Set(COLUMNS.map((c) => c.sort).filter(Boolean) as string[]);
+
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: { key?: string; filter?: string };
+  searchParams: { key?: string; filter?: string; sort?: string; dir?: string };
 }) {
   const secret = process.env.ADMIN_SECRET;
   if (!secret || searchParams.key !== secret) {
@@ -49,15 +63,22 @@ export default async function AdminPage({
   const filter = searchParams.filter ?? 'all';
   const key = searchParams.key;
 
+  // 정렬 상태 — 기본은 가입일시 내림차순
+  const sort = searchParams.sort && SORTABLE.has(searchParams.sort) ? searchParams.sort : 'created_at';
+  const dir: 'asc' | 'desc' = searchParams.dir === 'asc' ? 'asc' : 'desc';
+
   let query = db
     .from('players')
     .select(
       'id, nickname, real_name, student_id, department, registration_step, is_verified, best_score, best_score_at, created_at',
-    )
-    .order('created_at', { ascending: false });
+    );
 
   if (filter === 'verified') query = query.eq('is_verified', true);
   if (filter === 'incomplete') query = query.eq('is_verified', false);
+
+  query = query
+    .order(sort, { ascending: dir === 'asc', nullsFirst: false })
+    .order('created_at', { ascending: false }); // 동점 시 안정 정렬
 
   const { data: players } = await query;
   const rows = (players ?? []) as PlayerRow[];
@@ -76,9 +97,22 @@ export default async function AdminPage({
 
   const ticketSum = rows.reduce((s, p) => s + (p.best_score || 0), 0);
 
+  // 퍼널 — 전체 가입자 기준(필터 무관) 등록 단계별 누적 인원
+  const { data: allSteps } = await db.from('players').select('registration_step');
+  const stepArr = (allSteps ?? []).map((r) => r.registration_step as number);
+  const totalAll = stepArr.length;
+  const reachedAtLeast = (n: number) => stepArr.filter((s) => s >= n).length;
+  const FUNNEL: { label: string; count: number }[] = [
+    { label: '가입 진입', count: totalAll },
+    { label: '닉네임', count: reachedAtLeast(1) },
+    { label: '학번', count: reachedAtLeast(2) },
+    { label: '실명/학과', count: reachedAtLeast(3) },
+    { label: '완료', count: reachedAtLeast(4) },
+  ];
+
   const tab = (f: string, label: string) => (
     <a
-      href={`?key=${key}&filter=${f}`}
+      href={`?key=${key}&filter=${f}&sort=${sort}&dir=${dir}`}
       style={{
         display: 'inline-block',
         padding: '4px 14px',
@@ -121,6 +155,61 @@ export default async function AdminPage({
         ))}
       </div>
 
+      {/* 등록 퍼널 (깔때기) */}
+      <div style={{ border: '2px solid #000', padding: '16px 20px', marginBottom: '1.5rem' }}>
+        <div style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '12px', letterSpacing: '0.05em' }}>
+          등록 퍼널 — 단계별 도달 인원
+        </div>
+        {FUNNEL.map((stage, i) => {
+          const pct = totalAll ? Math.round((stage.count / totalAll) * 100) : 0;
+          // 막대 너비: 전체 대비 비율(최소 8%는 보이도록), 가운데 정렬로 깔때기 형태
+          const widthPct = totalAll ? Math.max((stage.count / totalAll) * 100, 8) : 8;
+          const prev = i > 0 ? FUNNEL[i - 1]!.count : null;
+          const conv = prev && prev > 0 ? Math.round((stage.count / prev) * 100) : null;
+          const dropoff = prev !== null ? prev - stage.count : null;
+          return (
+            <div
+              key={stage.label}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}
+            >
+              <div style={{ width: '72px', textAlign: 'right', fontSize: '11px', opacity: 0.7, whiteSpace: 'nowrap' }}>
+                {stage.label}
+              </div>
+              <div style={{ flex: 1, background: '#f0f0f0', height: '26px', position: 'relative' }}>
+                <div
+                  style={{
+                    width: `${widthPct}%`,
+                    height: '100%',
+                    margin: '0 auto',
+                    background: '#000',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {stage.count}
+                </div>
+              </div>
+              <div style={{ width: '150px', fontSize: '11px', opacity: 0.7, whiteSpace: 'nowrap' }}>
+                {pct}% of 전체
+                {conv !== null && (
+                  <span style={{ color: conv < 70 ? '#cc0000' : '#006600' }}>
+                    {' · 전환 '}
+                    {conv}%
+                  </span>
+                )}
+                {dropoff !== null && dropoff > 0 && (
+                  <span style={{ opacity: 0.5 }}> (-{dropoff})</span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       {/* 필터 + 내보내기 */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
         {tab('all', '전체')}
@@ -148,21 +237,35 @@ export default async function AdminPage({
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
           <thead>
             <tr style={{ background: '#000', color: '#fff' }}>
-              {['#', '닉네임', '실명', '학번', '학과', '등록단계', '완료', '점수(응모권)', '가입일시 (KST)'].map(
-                (h) => (
-                  <th
-                    key={h}
-                    style={{
-                      padding: '6px 10px',
-                      textAlign: h === '점수(응모권)' ? 'right' : 'left',
-                      whiteSpace: 'nowrap',
-                      fontWeight: 'normal',
-                    }}
-                  >
-                    {h}
+              {COLUMNS.map((col) => {
+                const active = col.sort === sort;
+                const nextDir = active && dir === 'asc' ? 'desc' : 'asc';
+                const arrow = active ? (dir === 'asc' ? ' ▲' : ' ▼') : '';
+                const thStyle = {
+                  padding: '6px 10px',
+                  textAlign: col.align ?? 'left',
+                  whiteSpace: 'nowrap',
+                  fontWeight: 'normal',
+                } as const;
+                if (!col.sort) {
+                  return (
+                    <th key={col.label} style={thStyle}>
+                      {col.label}
+                    </th>
+                  );
+                }
+                return (
+                  <th key={col.label} style={thStyle}>
+                    <a
+                      href={`?key=${key}&filter=${filter}&sort=${col.sort}&dir=${nextDir}`}
+                      style={{ color: '#fff', textDecoration: 'none', cursor: 'pointer' }}
+                    >
+                      {col.label}
+                      {arrow}
+                    </a>
                   </th>
-                ),
-              )}
+                );
+              })}
             </tr>
           </thead>
           <tbody>
