@@ -98,16 +98,18 @@ export default async function AdminPage({
   const ticketSum = rows.reduce((s, p) => s + (p.best_score || 0), 0);
 
   // 퍼널 — 전체 가입자 기준(필터 무관) 등록 단계별 누적 인원
-  const { data: allSteps } = await db.from('players').select('registration_step');
+  const { data: allSteps } = await db.from('players').select('registration_step, is_verified');
   const stepArr = (allSteps ?? []).map((r) => r.registration_step as number);
   const totalAll = stepArr.length;
   const reachedAtLeast = (n: number) => stepArr.filter((s) => s >= n).length;
+  // '완료'는 통계카드 '등록완료'와 동일하게 is_verified 기준으로 집계 (숫자 정합)
+  const verifiedCount = (allSteps ?? []).filter((r) => r.is_verified === true).length;
   const FUNNEL: { label: string; count: number }[] = [
     { label: '가입 진입', count: totalAll },
     { label: '닉네임', count: reachedAtLeast(1) },
     { label: '학번', count: reachedAtLeast(2) },
     { label: '실명/학과', count: reachedAtLeast(3) },
-    { label: '완료', count: reachedAtLeast(4) },
+    { label: '완료', count: verifiedCount },
   ];
 
   const tab = (f: string, label: string) => (

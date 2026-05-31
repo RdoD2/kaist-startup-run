@@ -110,7 +110,7 @@ Deno.serve(async (req: Request) => {
   // 세션 조회
   const { data: session, error: sessionError } = await db
     .from("game_sessions")
-    .select("id, player_id, consumed, expires_at")
+    .select("id, player_id, consumed, expires_at, started_at")
     .eq("id", game_session_id)
     .maybeSingle();
 
@@ -125,6 +125,22 @@ Deno.serve(async (req: Request) => {
   }
   if (session.expires_at < now) {
     return jsonResponse({ accepted: false, reason: "세션이 만료됐어" });
+  }
+
+  // 서버측 시간 기반 anti-cheat — 클라가 보낸 duration_ms는 신뢰하지 않는다.
+  // 세션이 서버에서 발급된 시각(started_at)부터 지금까지 실제 경과한 시간만큼만 점수를 인정.
+  // (예: "1시간 플레이했다"고 거짓 duration_ms를 보내도 서버 경과시간이 진짜 상한)
+  const serverElapsedMs = Date.parse(now) - Date.parse(session.started_at);
+  if (serverElapsedMs < 5000) {
+    return jsonResponse({ accepted: false, reason: "세션 시작 후 너무 빨라 (최소 5초)" });
+  }
+  // 네트워크 지연 여유(2초) + 서버 경과시간 × 초당 상한
+  const maxScoreByServerTime = ((serverElapsedMs + 2000) / 1000) * MAX_SCORE_PER_SECOND;
+  if (score > maxScoreByServerTime) {
+    return jsonResponse({
+      accepted: false,
+      reason: "점수가 서버 경과시간 대비 비정상적으로 높아",
+    });
   }
 
   const prevBestScore = player.best_score;
