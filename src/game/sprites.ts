@@ -126,26 +126,14 @@ export function createObstacleSprite(
     case 'cofounder_left':
       drawCofounder(scene, container);
       break;
-    case 'competitor':
-      drawCompetitor(scene, container);
-      break;
-    case 'lawsuit':
-      drawLawsuit(scene, container);
-      break;
     case 'pivot':
       drawPivot(scene, container);
       break;
     case 'rent_due':
       drawRentDue(scene, container);
       break;
-    case 'tax_audit':
-      drawTaxAudit(scene, container);
-      break;
     case 'product_bug':
       drawProductBug(scene, container);
-      break;
-    case 'aws_bill':
-      drawAwsBill(scene, container);
       break;
     case 'regulation':
       drawRegulation(scene, container);
@@ -153,14 +141,8 @@ export function createObstacleSprite(
     case 'office_drama':
       drawOfficeDrama(scene, container);
       break;
-    case 'claude_bill':
-      drawClaudeBill(scene, container);
-      break;
     case 'domain_expired':
       drawDomainExpired(scene, container);
-      break;
-    case 'press_leak':
-      drawPressLeak(scene, container);
       break;
   }
 
@@ -242,45 +224,6 @@ function drawCofounder(
   g.fillTriangle(-6, -30, 6, -30, 0, -24);
 }
 
-// competitor: 화살 모양 (숙이기 장애물 — offsetY로 위에 떠있음)
-// def: 56×22
-function drawCompetitor(
-  scene: Phaser.Scene,
-  c: Phaser.GameObjects.Container,
-): void {
-  // 화살 꼬리 (직사각형)
-  addRect(scene, c, -12, 0, 28, 10, PALETTE.ink12);
-  // 화살 날개 (위아래 핀)
-  addRect(scene, c, -12, -6, 8, 8, PALETTE.ink12);
-  addRect(scene, c, -12, 6, 8, 8, PALETTE.ink12);
-  // 화살 머리 (삼각형 — Graphics)
-  const g = addGfx(scene, c);
-  g.fillStyle(PALETTE.ink12, 1);
-  g.fillTriangle(2, -10, 2, 10, 24, 0);
-  // 강조 라인
-  addRect(scene, c, -4, 0, 2, 6, PALETTE.ink7);
-}
-
-// lawsuit: 서류 (페이지 라인 줄무늬)
-// def: 46×26 (duck — 위에 뜸)
-function drawLawsuit(
-  scene: Phaser.Scene,
-  c: Phaser.GameObjects.Container,
-): void {
-  // 본체
-  addRect(scene, c, 0, 0, 40, 22, PALETTE.ink9);
-  // 접힌 모서리 (우상단 삼각 — 어두운 사각으로 표현)
-  addRect(scene, c, 14, -7, 8, 8, PALETTE.ink5);
-  // 줄무늬 (텍스트 라인 암시)
-  for (let i = 0; i < 3; i++) {
-    addRect(scene, c, -4, -6 + i * 6, 24, 2, PALETTE.ink5);
-  }
-  // 테두리 강조
-  const g = addGfx(scene, c);
-  g.lineStyle(2, PALETTE.ink5, 1);
-  g.strokeRect(-20, -11, 40, 22);
-}
-
 // pivot: 표지판 (포스트 + 직사각형 판)
 // def: 32×54
 function drawPivot(
@@ -326,27 +269,6 @@ function drawRentDue(
   }
 }
 
-// tax_audit: 노트북 (직사각형 + 키 그리드)
-// def: 42×24 (duck — 위에 뜸)
-function drawTaxAudit(
-  scene: Phaser.Scene,
-  c: Phaser.GameObjects.Container,
-): void {
-  // 노트북 화면
-  addRect(scene, c, 0, -4, 36, 12, PALETTE.ink1);
-  addRect(scene, c, 0, -4, 32, 10, PALETTE.ink10);
-  // 노트북 바닥 (키보드 부)
-  addRect(scene, c, 0, 6, 40, 8, PALETTE.ink5);
-  // 키 그리드 (작은 사각형 격자)
-  const g = addGfx(scene, c);
-  g.fillStyle(PALETTE.ink1, 1);
-  for (let col = 0; col < 5; col++) {
-    for (let row = 0; row < 2; row++) {
-      g.fillRect(-16 + col * 8, 3 + row * 4, 6, 3);
-    }
-  }
-}
-
 // product_bug: 작은 사각형 + 다리 4개 (벌레)
 // def: 26×36
 function drawProductBug(
@@ -370,30 +292,6 @@ function drawProductBug(
   // 눈
   addRect(scene, c, -2, -14, 2, 2, PALETTE.ink0);
   addRect(scene, c, 2, -14, 2, 2, PALETTE.ink0);
-}
-
-// aws_bill: 직사각형 + 텍스트 대신 "$" 픽셀 패턴
-// def: 52×22 (duck — 위에 뜸)
-function drawAwsBill(
-  scene: Phaser.Scene,
-  c: Phaser.GameObjects.Container,
-): void {
-  // 본체 (청구서 느낌)
-  addRect(scene, c, 0, 0, 48, 18, PALETTE.ink11);
-  // 어두운 테두리
-  const g = addGfx(scene, c);
-  g.lineStyle(2, PALETTE.ink3, 1);
-  g.strokeRect(-24, -9, 48, 18);
-  // "$" 픽셀 패턴 (수직선 + 가로선 3개)
-  g.fillStyle(PALETTE.ink1, 1);
-  g.fillRect(-18, -6, 2, 12); // 세로선
-  g.fillRect(-20, -6, 8, 2);  // 위 가로선
-  g.fillRect(-20, -1, 8, 2);  // 중간 가로선
-  g.fillRect(-20, 4, 8, 2);   // 아래 가로선
-  // 숫자 3줄 (청구 금액 암시 — 직사각형 바)
-  for (let i = 0; i < 3; i++) {
-    addRect(scene, c, 8 + i * 6, 0, 4, 10, PALETTE.ink3);
-  }
 }
 
 // regulation: 큰 건물 (창문 격자)
@@ -447,28 +345,6 @@ function drawOfficeDrama(
   g.fillRect(-6, 2, 12, 2); // 가로 선
 }
 
-// claude_bill: API 청구서 (영수증 형태 + "$" 마크)
-// def: 54×22 (duck — 위에 뜸)
-function drawClaudeBill(
-  scene: Phaser.Scene,
-  c: Phaser.GameObjects.Container,
-): void {
-  // 청구서 본체 (밝은 핑크)
-  addRect(scene, c, 0, 0, 48, 18, PALETTE.ink14);
-  // 상단 헤더 (어두운 줄)
-  addRect(scene, c, 0, -7, 48, 4, PALETTE.ink2);
-  // 청구서 라인 (3줄)
-  addRect(scene, c, -10, -1, 16, 2, PALETTE.ink1);
-  addRect(scene, c, -10, 3, 16, 2, PALETTE.ink1);
-  // $ 마크 (오른쪽 큰 사각)
-  addRect(scene, c, 14, 1, 10, 12, PALETTE.ink8);
-  addRect(scene, c, 14, 1, 4, 8, PALETTE.ink7); // $ 안쪽 강조
-  // 테두리
-  const g = addGfx(scene, c);
-  g.lineStyle(2, PALETTE.ink1, 1);
-  g.strokeRect(-24, -9, 48, 18);
-}
-
 // domain_expired: 만료 도메인 (404 박스 + X 표시)
 // def: 36×48
 function drawDomainExpired(
@@ -490,28 +366,4 @@ function drawDomainExpired(
   g.lineBetween(8, -4, -8, 12);
   // 하단 라벨 (404)
   addRect(scene, c, 0, 18, 16, 4, PALETTE.ink8);
-}
-
-// press_leak: 익명 폭로 (확성기 + 점선)
-// def: 48×24 (duck — 위에 뜸)
-function drawPressLeak(
-  scene: Phaser.Scene,
-  c: Phaser.GameObjects.Container,
-): void {
-  // 확성기 본체 (사다리꼴 — 직사각형 2개로 근사)
-  addRect(scene, c, -8, 0, 20, 16, PALETTE.ink15);
-  // 확성기 입구 (오른쪽 — 더 큰 사각)
-  addRect(scene, c, 8, 0, 12, 20, PALETTE.ink15);
-  // 확성기 손잡이 (왼쪽)
-  addRect(scene, c, -18, 0, 6, 8, PALETTE.ink5);
-  // 소리 파장 (오른쪽 점선 3개)
-  const g = addGfx(scene, c);
-  g.fillStyle(PALETTE.ink8, 1);
-  g.fillRect(16, -8, 2, 2);
-  g.fillRect(19, -3, 2, 2);
-  g.fillRect(20, 4, 2, 2);
-  g.fillRect(18, 8, 2, 2);
-  // 테두리
-  g.lineStyle(2, PALETTE.ink1, 1);
-  g.strokeRect(-18, -8, 30, 16);
 }

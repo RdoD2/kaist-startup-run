@@ -9,18 +9,12 @@ export type ObstacleType =
   | 'investor_pass'
   | 'burnout'
   | 'cofounder_left'
-  | 'competitor'
-  | 'lawsuit'
   | 'pivot'
   | 'rent_due'
-  | 'tax_audit'
   | 'product_bug'
-  | 'aws_bill'
   | 'regulation'
   | 'office_drama'
-  | 'claude_bill'
-  | 'domain_expired'
-  | 'press_leak';
+  | 'domain_expired';
 
 export type ObstacleAction = 'jump' | 'duck';
 
@@ -127,67 +121,6 @@ export const OBSTACLE_DEFS: Record<ObstacleType, ObstacleDef> = {
     offsetY: 0,
     deathCause: 'cash_dry',
   },
-  // ── 숙이기류 ───────────────────────────────────────────
-  competitor: {
-    type: 'competitor',
-    action: 'duck',
-    label: '유니콘의 카피캣',
-    color: PALETTE.ink12,
-    width: 56,
-    height: 22,
-    offsetY: 22,
-    deathCause: 'competitor',
-  },
-  lawsuit: {
-    type: 'lawsuit',
-    action: 'duck',
-    label: '동료의 고소장',
-    color: PALETTE.ink9,
-    width: 46,
-    height: 26,
-    offsetY: 20,
-    deathCause: 'lawsuit',
-  },
-  tax_audit: {
-    type: 'tax_audit',
-    action: 'duck',
-    label: '국세청 출장',
-    color: PALETTE.ink10,
-    width: 42,
-    height: 24,
-    offsetY: 20,
-    deathCause: 'regulation',
-  },
-  aws_bill: {
-    type: 'aws_bill',
-    action: 'duck',
-    label: '미납된 클라우드 비용',
-    color: PALETTE.ink11,
-    width: 52,
-    height: 22,
-    offsetY: 22,
-    deathCause: 'cash_dry',
-  },
-  claude_bill: {
-    type: 'claude_bill',
-    action: 'duck',
-    label: '미친 LLM 비용',
-    color: PALETTE.ink14,
-    width: 54,
-    height: 22,
-    offsetY: 22,
-    deathCause: 'cash_dry',
-  },
-  press_leak: {
-    type: 'press_leak',
-    action: 'duck',
-    label: '익명 제보 폭로',
-    color: PALETTE.ink15,
-    width: 48,
-    height: 24,
-    offsetY: 20,
-    deathCause: 'product_fail',
-  },
 };
 
 // =====================================================================
@@ -201,64 +134,36 @@ export type ObstaclePattern = {
 };
 
 export const OBSTACLE_PATTERNS: ObstaclePattern[] = [
-  // 단일 (전 15종 골고루)
+  // 단일 (9종)
   { name: 'investor_pass', sequence: ['investor_pass'] },
   { name: 'burnout', sequence: ['burnout'] },
+  { name: 'cofounder', sequence: ['cofounder_left'] },
+  { name: 'pivot', sequence: ['pivot'] },
   { name: 'rent_due', sequence: ['rent_due'] },
   { name: 'product_bug', sequence: ['product_bug'] },
-  { name: 'competitor', sequence: ['competitor'] },
-  { name: 'lawsuit', sequence: ['lawsuit'] },
-  { name: 'tax_audit', sequence: ['tax_audit'] },
-  { name: 'aws_bill', sequence: ['aws_bill'] },
-  { name: 'pivot', sequence: ['pivot'] },
-  { name: 'office_drama', sequence: ['office_drama'] },
   { name: 'regulation', sequence: ['regulation'] },
-  { name: 'cofounder', sequence: ['cofounder_left'] },
-  { name: 'claude_bill', sequence: ['claude_bill'] },
+  { name: 'office_drama', sequence: ['office_drama'] },
   { name: 'domain_expired', sequence: ['domain_expired'] },
-  { name: 'press_leak', sequence: ['press_leak'] },
-
-  // 점프-숙이기 콤보
-  { name: 'jump_duck_a', sequence: ['investor_pass', 'competitor'], innerGapMs: 420 },
-  { name: 'jump_duck_b', sequence: ['burnout', 'lawsuit'], innerGapMs: 400 },
-  { name: 'jump_duck_c', sequence: ['rent_due', 'tax_audit'], innerGapMs: 440 },
-  { name: 'jump_duck_d', sequence: ['product_bug', 'aws_bill'], innerGapMs: 380 },
-  { name: 'jump_duck_e', sequence: ['pivot', 'competitor'], innerGapMs: 450 },
-  { name: 'jump_duck_f', sequence: ['domain_expired', 'claude_bill'], innerGapMs: 420 },
-  { name: 'jump_duck_g', sequence: ['rent_due', 'press_leak'], innerGapMs: 440 },
-
-  // 숙이기-점프
-  { name: 'duck_jump_a', sequence: ['lawsuit', 'burnout'], innerGapMs: 400 },
-  { name: 'duck_jump_b', sequence: ['competitor', 'investor_pass'], innerGapMs: 420 },
-  { name: 'duck_jump_c', sequence: ['aws_bill', 'rent_due'], innerGapMs: 440 },
-  { name: 'duck_jump_d', sequence: ['tax_audit', 'product_bug'], innerGapMs: 380 },
-  { name: 'duck_jump_e', sequence: ['claude_bill', 'domain_expired'], innerGapMs: 420 },
-  { name: 'duck_jump_f', sequence: ['press_leak', 'pivot'], innerGapMs: 460 },
-
   // 더블 점프
-  { name: 'double_jump_a', sequence: ['investor_pass', 'burnout'], innerGapMs: 340 },
-  { name: 'double_jump_b', sequence: ['rent_due', 'product_bug'], innerGapMs: 320 },
-  { name: 'double_jump_c', sequence: ['investor_pass', 'rent_due'], innerGapMs: 360 },
-  { name: 'double_jump_d', sequence: ['domain_expired', 'product_bug'], innerGapMs: 320 },
-
-  // 더블 숙이기
-  { name: 'double_duck_a', sequence: ['competitor', 'lawsuit'], innerGapMs: 320 },
-  { name: 'double_duck_b', sequence: ['tax_audit', 'aws_bill'], innerGapMs: 340 },
-  { name: 'double_duck_c', sequence: ['aws_bill', 'claude_bill'], innerGapMs: 320 },
-  { name: 'double_duck_d', sequence: ['press_leak', 'lawsuit'], innerGapMs: 360 },
-
+  { name: 'double_a', sequence: ['investor_pass', 'burnout'], innerGapMs: 340 },
+  { name: 'double_b', sequence: ['rent_due', 'product_bug'], innerGapMs: 320 },
+  { name: 'double_c', sequence: ['investor_pass', 'rent_due'], innerGapMs: 360 },
+  { name: 'double_d', sequence: ['domain_expired', 'product_bug'], innerGapMs: 320 },
+  { name: 'double_e', sequence: ['burnout', 'pivot'], innerGapMs: 340 },
+  { name: 'double_f', sequence: ['office_drama', 'rent_due'], innerGapMs: 360 },
   // 트리플
-  { name: 'triple_jump', sequence: ['investor_pass', 'product_bug', 'burnout'], innerGapMs: 300 },
-  { name: 'triple_mix', sequence: ['burnout', 'competitor', 'rent_due'], innerGapMs: 360 },
-  { name: 'triple_cash', sequence: ['rent_due', 'aws_bill', 'claude_bill'], innerGapMs: 380 },
+  { name: 'triple_a', sequence: ['investor_pass', 'product_bug', 'burnout'], innerGapMs: 300 },
+  { name: 'triple_b', sequence: ['burnout', 'rent_due', 'pivot'], innerGapMs: 340 },
+  { name: 'triple_c', sequence: ['rent_due', 'domain_expired', 'product_bug'], innerGapMs: 320 },
+  { name: 'triple_d', sequence: ['investor_pass', 'office_drama', 'regulation'], innerGapMs: 360 },
 ];
 
 export const BOSS_SEQUENCE: ObstacleType[] = [
-  'competitor',
   'cofounder_left',
   'burnout',
   'regulation',
-  'press_leak',
+  'office_drama',
+  'investor_pass',
 ];
 
 // 점수별 허용 콤보 길이 — 초반엔 단일만, 점차 콤보 해금

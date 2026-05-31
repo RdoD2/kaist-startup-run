@@ -58,9 +58,6 @@ export class GameScene extends Phaser.Scene {
   private score: number = 0;
   private distanceAccum: number = 0;
   private startTime: number = 0;
-  private isDucking: boolean = false;
-  private duckTimer: number = 0;
-  private readonly DUCK_DURATION_MS = 600;
 
   private milestones: { 100: boolean; 365: boolean; 1000: boolean } = {
     100: false,
@@ -150,7 +147,6 @@ export class GameScene extends Phaser.Scene {
       this,
       {
         onJump: () => this.handleJump(),
-        onDuck: () => this.handleDuck(),
       },
       { pointerGuardTopPx: 30 },
     );
@@ -239,14 +235,6 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.updateBackground(effectiveSpeed, dt);
-
-    // 숙이기 타이머
-    if (this.isDucking) {
-      this.duckTimer -= dt;
-      if (this.duckTimer <= 0) {
-        this.standUp();
-      }
-    }
   }
 
   // =====================================================================
@@ -261,8 +249,6 @@ export class GameScene extends Phaser.Scene {
     this.distanceAccum = 0;
     this.gameActive = false;
     this.waitingForFirstInput = true;
-    this.isDucking = false;
-    this.duckTimer = 0;
     this.isOnGround = true;
     this.jumpCount = 0;
     this.obstacles = [];
@@ -473,7 +459,7 @@ export class GameScene extends Phaser.Scene {
     this.tutorialSub = this.add.text(
       CANVAS.width / 2,
       CANVAS.height / 2 + 10,
-      'TAP = JUMP\nSWIPE DOWN = DUCK',
+      'TAP = JUMP',
       {
         fontFamily: '"Press Start 2P", monospace',
         fontSize: '12px',
@@ -519,39 +505,6 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private handleDuck(): void {
-    if (this.waitingForFirstInput) {
-      this.startGameplay();
-      return;
-    }
-    if (!this.gameActive) return;
-    if (this.isDucking) return;
-
-    vibrate(5);
-    soundFX.duck();
-    this.isDucking = true;
-    this.duckTimer = this.DUCK_DURATION_MS;
-
-    this.playerHitbox.setSize(CANVAS.playerW, CANVAS.playerDuckH);
-    this.playerHitbox.setY(CANVAS.groundY - CANVAS.playerDuckH / 2);
-    if (this.playerBody) {
-      this.playerBody.setSize(CANVAS.playerW, CANVAS.playerDuckH);
-    }
-    // 스프라이트 납작하게
-    this.playerSprite.container.setScale(1, 0.6);
-  }
-
-  private standUp(): void {
-    this.isDucking = false;
-    this.playerHitbox.setSize(CANVAS.playerW, CANVAS.playerH);
-    this.playerHitbox.setY(CANVAS.groundY - CANVAS.playerH / 2);
-    if (this.playerBody) {
-      this.playerBody.setSize(CANVAS.playerW, CANVAS.playerH);
-    }
-    // 스프라이트 원래 크기로
-    this.playerSprite.container.setScale(1, 1);
-  }
-
   private startGameplay(): void {
     this.waitingForFirstInput = false;
     this.gameActive = true;
@@ -582,7 +535,7 @@ export class GameScene extends Phaser.Scene {
   // =====================================================================
 
   private updatePlayer(dt: number): void {
-    const halfH = (this.isDucking ? CANVAS.playerDuckH : CANVAS.playerH) / 2;
+    const halfH = CANVAS.playerH / 2;
     const floorY = CANVAS.groundY - halfH;
     const vy = this.playerBody.velocity.y;
 
@@ -605,7 +558,7 @@ export class GameScene extends Phaser.Scene {
     this.playerSprite.container.setPosition(spriteX, spriteGroundY);
 
     // 런 사이클 — 땅에 있을 때만 다리 교차 애니메이션
-    if (this.isOnGround && !this.isDucking) {
+    if (this.isOnGround) {
       this.runTimer += dt;
       const freq = 0.012; // 진동 주파수
       const amp = 6;      // 다리 진동 범위 (px)
@@ -716,7 +669,7 @@ export class GameScene extends Phaser.Scene {
 
   private updateObstacles(speed: number, dt: number): void {
     const halfW = CANVAS.playerW / 2;
-    const halfH = (this.isDucking ? CANVAS.playerDuckH : CANVAS.playerH) / 2;
+    const halfH = CANVAS.playerH / 2;
     const playerLeft = this.playerHitbox.x - halfW;
     const playerRight = this.playerHitbox.x + halfW;
     const playerTop = this.playerHitbox.y - halfH;
