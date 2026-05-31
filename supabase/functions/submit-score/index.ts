@@ -23,8 +23,10 @@ const MILESTONE_THRESHOLDS: Array<[number, string]> = [
   [1000, "1000"],
 ];
 
-// PRD §9: Anti-cheat 속도 상한 — 초당 최대 100점
-const MAX_SCORE_PER_SECOND = 100;
+// Anti-cheat 속도 상한 — 초당 최대 점수.
+// 실제 게임은 최고 속도(860px/s ÷ 200px/day)에서도 초당 ~4.3점, 정상 최대 점수도
+// 평균 8~9점/초 수준이라 25면 정상 플레이어엔 영향 없고 부정 점수 천장을 크게 낮춘다.
+const MAX_SCORE_PER_SECOND = 25;
 
 type Milestones = Record<string, boolean>;
 
