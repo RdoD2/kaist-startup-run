@@ -98,12 +98,30 @@ export default async function AdminPage({
   const ticketSum = rows.reduce((s, p) => s + (p.best_score || 0), 0);
 
   // 퍼널 — 전체 가입자 기준(필터 무관) 등록 단계별 누적 인원
-  const { data: allSteps } = await db.from('players').select('registration_step, is_verified');
+  const { data: allSteps } = await db
+    .from('players')
+    .select('registration_step, is_verified, best_score');
   const stepArr = (allSteps ?? []).map((r) => r.registration_step as number);
   const totalAll = stepArr.length;
   const reachedAtLeast = (n: number) => stepArr.filter((s) => s >= n).length;
   // '완료'는 통계카드 '등록완료'와 동일하게 is_verified 기준으로 집계 (숫자 정합)
   const verifiedCount = (allSteps ?? []).filter((r) => r.is_verified === true).length;
+
+  // 부정 점수 탐지(휴리스틱) — 점수 위변조 차단이 아직 서버에 배포 전이라
+  // 비정상적으로 높은 점수를 어드민에서 눈으로 걸러낼 수 있게 표시한다.
+  // 정상 분포의 중앙값×3, 또는 절대 하한 3000 중 큰 값을 임계값으로.
+  const positiveScores = (allSteps ?? [])
+    .map((r) => r.best_score as number)
+    .filter((s) => s > 0)
+    .sort((a, b) => a - b);
+  const medianScore = positiveScores.length
+    ? positiveScores[Math.floor(positiveScores.length / 2)]!
+    : 0;
+  const SUSPICIOUS_THRESHOLD = Math.max(medianScore * 3, 3000);
+  const isSuspicious = (s: number) => s >= SUSPICIOUS_THRESHOLD;
+  const suspiciousCount = (allSteps ?? []).filter(
+    (r) => (r.best_score as number) > 0 && isSuspicious(r.best_score as number),
+  ).length;
   const FUNNEL: { label: string; count: number }[] = [
     { label: '가입 진입', count: totalAll },
     { label: '닉네임', count: reachedAtLeast(1) },
@@ -155,6 +173,23 @@ export default async function AdminPage({
             <div style={{ fontSize: '1.6rem', fontWeight: 'bold' }}>{value}</div>
           </div>
         ))}
+        {suspiciousCount > 0 && (
+          <div
+            style={{
+              border: '2px solid #cc0000',
+              background: '#fff0f0',
+              padding: '12px 20px',
+              minWidth: '110px',
+            }}
+          >
+            <div style={{ fontSize: '11px', color: '#cc0000', marginBottom: '4px' }}>
+              ⚠ 의심 점수
+            </div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 'bold', color: '#cc0000' }}>
+              {suspiciousCount}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 등록 퍼널 (깔때기) */}
@@ -301,8 +336,22 @@ export default async function AdminPage({
                 <td style={{ padding: '5px 10px', textAlign: 'center', color: p.is_verified ? '#006600' : '#999' }}>
                   {p.is_verified ? '✓' : ''}
                 </td>
-                <td style={{ padding: '5px 10px', textAlign: 'right' }}>
-                  {p.best_score > 0 ? <strong>{p.best_score}</strong> : <span style={{ opacity: 0.3 }}>-</span>}
+                <td
+                  style={{
+                    padding: '5px 10px',
+                    textAlign: 'right',
+                    color: p.best_score > 0 && isSuspicious(p.best_score) ? '#cc0000' : undefined,
+                    background: p.best_score > 0 && isSuspicious(p.best_score) ? '#fff0f0' : undefined,
+                  }}
+                >
+                  {p.best_score > 0 ? (
+                    <strong>
+                      {p.best_score}
+                      {isSuspicious(p.best_score) && ' ⚠'}
+                    </strong>
+                  ) : (
+                    <span style={{ opacity: 0.3 }}>-</span>
+                  )}
                 </td>
                 <td style={{ padding: '5px 10px', whiteSpace: 'nowrap', opacity: 0.7 }}>{kst(p.created_at)}</td>
               </tr>
@@ -317,6 +366,10 @@ export default async function AdminPage({
 
       <p style={{ marginTop: '12px', opacity: 0.4, fontSize: '11px' }}>
         {rows.length}명 표시 / 총 {total ?? 0}명 가입
+      </p>
+      <p style={{ marginTop: '4px', opacity: 0.5, fontSize: '11px' }}>
+        ⚠ = 의심 점수 (임계값 {SUSPICIOUS_THRESHOLD.toLocaleString()}점 이상 · 정상 분포 중앙값×3 또는 3000 중 큰 값).
+        위변조 가능성 있으니 추첨 전 수동 확인 권장.
       </p>
     </div>
   );
