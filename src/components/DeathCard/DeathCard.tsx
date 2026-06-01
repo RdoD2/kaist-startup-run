@@ -77,17 +77,19 @@ export function DeathCard({
   const handleShare = async () => {
     const base =
       process.env.NEXT_PUBLIC_BASE_URL ?? window.location.origin;
-    const ogUrl = `${base}/api/og?score=${encodeURIComponent(score)}&cause=${encodeURIComponent(deathCause)}&nickname=${encodeURIComponent(nickname)}&tickets=${tickets}`;
+    // 공유 링크는 게임으로 진입하는 /share 랜딩 (점수별 OG 이미지가 미리보기로 붙음).
+    // OG 이미지 주소를 직접 공유하면 받는 사람이 PNG만 보고 게임에 못 들어옴.
+    const shareUrl = `${base}/share?score=${encodeURIComponent(score)}&cause=${encodeURIComponent(deathCause)}&nickname=${encodeURIComponent(nickname)}&tickets=${encodeURIComponent(tickets)}`;
     const shareText = `나는 ${score}일 버텼다\n너는?\nSTARTUP RUN · KAIST 창업대회`;
     if (navigator.share) {
       try {
-        await navigator.share({ text: shareText, url: ogUrl });
+        await navigator.share({ text: shareText, url: shareUrl });
       } catch {
         // 취소됨 — 무시
       }
     } else {
       try {
-        await navigator.clipboard.writeText(`${shareText}\n${ogUrl}`);
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
         showToast('클립보드에 복사했어');
       } catch {
         showToast('복사 실패. 직접 복사해줘.');
